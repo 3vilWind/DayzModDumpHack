@@ -14,7 +14,7 @@ MemoryAPI::MemoryAPI(QString pathDump, QString pathIDX)
     loadIDX(pathIDX);
 }
 
-quint32 MemoryAPI::convertVirtToPhys(quint32 virt)
+quint32 MemoryAPI::convertVirtToPhys(const quint32 virt) const
 {
     for(auto it = memoryRelations.begin(); it != memoryRelations.end(); ++it)
     {
@@ -61,26 +61,26 @@ void MemoryAPI::loadDump(QString path)
     dumpFile.open(QIODevice::ReadOnly);
 }
 
-QByteArray MemoryAPI::readVirtMem(quint32 baseAddr, quint32 size)
+QByteArray MemoryAPI::readVirtMem(const quint32 baseAddr, const quint32 size)
 {
     //qDebug() << hex << baseAddr;
     QByteArray result;
-    try{
+    //try{
         quint32 addr = convertVirtToPhys(baseAddr);
         //qDebug() << hex << addr;
         dumpFile.seek(addr);
         result = dumpFile.read(size);
 
         //qDebug() << hex << result.toUInt(nullptr,16);
-    }catch(int i)
+    /*}catch(int i)
     {
-        1+1;
-        //qDebug() << "Ошибка с конвертацией адреса";
-    }
+        //1+1;
+        qDebug() << "Ошибка с конвертацией адреса";
+    }*/
     return result;
 }
 
-qint32 MemoryAPI::readInt(quint32 offset)
+qint32 MemoryAPI::readInt(const quint32 offset)
 {
     qint32 a;
     QDataStream ds(readVirtMem(offset, 4));
@@ -89,7 +89,7 @@ qint32 MemoryAPI::readInt(quint32 offset)
     return a;
 }
 
-quint32 MemoryAPI::readPtr(quint32 offset)
+quint32 MemoryAPI::readPtr(const quint32 offset)
 {
     quint32 a;
     QDataStream ds(readVirtMem(offset, 4));
@@ -99,12 +99,12 @@ quint32 MemoryAPI::readPtr(quint32 offset)
     return a;
 }
 
-QString MemoryAPI::readStringAscii(quint32 offset, quint32 size)
+QString MemoryAPI::readStringAscii(const quint32 offset, const quint32 size)
 {
     return QString(readVirtMem(offset, size));
 }
 
-float MemoryAPI::readFloat(quint32 offset)
+float MemoryAPI::readFloat(const quint32 offset)
 {
     float a;
     QDataStream ds(readVirtMem(offset, 4));

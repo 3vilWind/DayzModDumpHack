@@ -29,13 +29,15 @@ SOURCES += \
     worldstate.cpp \
     interactivemap.cpp \
     memoryapi.cpp \
-    sidepanel.cpp
+    sidepanel.cpp \
+    entitydata.cpp
 
 HEADERS += \
         mainwindow.h \
     worldstate.h \
     interactivemap.h \
     memoryapi.h \
-    sidepanel.h
+    sidepanel.h \
+    entitydata.h
 
 FORMS +=

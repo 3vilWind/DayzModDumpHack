@@ -4,6 +4,10 @@
 
 InteractiveMap::InteractiveMap(QWidget* pwgt) : QWidget(pwgt)
 {
+}
+
+InteractiveMap::InteractiveMap(WorldState *ws, QWidget* pwgt) : QWidget(pwgt)
+{
     painter = new QPainter();
     image   = new QPixmap("D:/bigmap.jpg");
 
@@ -13,10 +17,13 @@ InteractiveMap::InteractiveMap(QWidget* pwgt) : QWidget(pwgt)
     pal.setColor(QPalette::Background,QColor(Qt::GlobalColor::black));
     setPalette(pal);
     setAutoFillBackground(true);
+    worldState = ws;
 }
 
 InteractiveMap::~InteractiveMap()
 {
+    delete painter;
+    delete image;
 }
 
 void InteractiveMap::paintEvent(QPaintEvent *pe)
@@ -29,6 +36,12 @@ void InteractiveMap::paintEvent(QPaintEvent *pe)
     painter->translate(translate);
 
     painter->drawPixmap(0,0, *image);
+
+    for(auto it = worldState->entityArray.begin(); it!=worldState->entityArray.end();++it)
+    {
+        if(((*it).entityType) == EntityData::type::car)
+            qDebug() << (*it).name;
+    }
 //////////////////////////////////////////////////
     painter->end();
 }

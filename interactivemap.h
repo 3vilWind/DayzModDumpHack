@@ -7,6 +7,7 @@
 #include <QWheelEvent>
 #include <QPixmap>
 #include <QPainter>
+#include "worldstate.h"
 
 class InteractiveMap : public QWidget
 {
@@ -15,11 +16,13 @@ protected:
 
 public:
     InteractiveMap(QWidget* pwgt = nullptr);
+    InteractiveMap(WorldState* ws, QWidget* pwgt = nullptr);
     virtual ~InteractiveMap();
 
     void updateScale(const qreal value, const QPointF& dpos);
     void updateTranslate(const QPointF& value);
 private:
+    WorldState* worldState;
     QPainter* painter;
     QPixmap*  image;
     void mousePressEvent  (QMouseEvent* pe);

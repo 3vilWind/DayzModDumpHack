@@ -26,7 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     QSplitter* spl = new QSplitter(Qt::Horizontal);
 
-    InteractiveMap* map = new InteractiveMap;
+    InteractiveMap* map = new InteractiveMap(worldstate);
     SidePanel* panel = new SidePanel;
     panel->setMinimumWidth(200);
     panel->setMaximumWidth(panel->minimumWidth());

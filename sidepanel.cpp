@@ -3,33 +3,30 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QCheckBox>
+#include <QSignalMapper>
+#include <QDebug>
+#include <QSettings>
 
 SidePanel::SidePanel(QWidget *parent) : QWidget(parent)
 {
-    /*QPalette pal;
-    pal.setColor(QPalette::Background,QColor(Qt::GlobalColor::black));
-    setPalette(pal);
-    setAutoFillBackground(true);*/
+    psigManager = new QSignalMapper(this);
+    connect(psigManager, SIGNAL(mapped(QWidget*)), this, SLOT(updateCheckBox(QWidget*)));
 ////////////////////////////////////VEHICLES///////////////////////////////
     QVBoxLayout*    panelLayout = new QVBoxLayout;
 
-    QGroupBox*      vehBox = new QGroupBox("Vehicles");
+    QGroupBox*  vehBox = new QGroupBox("Vehicles");
     QVBoxLayout*    vehLayout = new QVBoxLayout;
-    QCheckBox*      cars = new QCheckBox("Cars");
-    QCheckBox*      moto = new QCheckBox("Motorcycles");
-    QCheckBox*      airp = new QCheckBox("Airplanes");
-    QCheckBox*      ship = new QCheckBox("Ships");
-    QCheckBox*      heli = new QCheckBox("Helicopters");
-    QCheckBox*      para = new QCheckBox("Parachutes");
-    QCheckBox*      tank = new QCheckBox("Tanks");
 
-    vehLayout->addWidget(cars);
-    vehLayout->addWidget(moto);
-    vehLayout->addWidget(airp);
-    vehLayout->addWidget(ship);
-    vehLayout->addWidget(heli);
-    vehLayout->addWidget(para);
-    vehLayout->addWidget(tank);
+    QVector<QCheckBox*> veh;
+    veh.append(new QCheckBox("Cars"));
+    veh.append(new QCheckBox("Motorcycles"));
+    veh.append(new QCheckBox("Airplanes"));
+    veh.append(new QCheckBox("Ships"));
+    veh.append(new QCheckBox("Helicopters"));
+    veh.append(new QCheckBox("Parachutes"));
+    veh.append(new QCheckBox("Tanks"));
+
+    mapCheckBoxes(veh, vehLayout);
 
     vehBox->setLayout(vehLayout);
     panelLayout->addWidget(vehBox);
@@ -37,43 +34,62 @@ SidePanel::SidePanel(QWidget *parent) : QWidget(parent)
 ////////////////////////////////BUILDINGS///////////////////////////////////
     QGroupBox*      buildBox = new QGroupBox("Buildings");
     QVBoxLayout*    buildLayout = new QVBoxLayout;
-    QCheckBox*      tent = new QCheckBox("Tents");
-    QCheckBox*      stas = new QCheckBox("Stashes");
-    QCheckBox*      fenc = new QCheckBox("Wooden Fences");
-    QCheckBox*      ammo = new QCheckBox("Ammo Boxes");
-    QCheckBox*      fire = new QCheckBox("Camp Fires");
-    QCheckBox*      cras = new QCheckBox("Crash Sites");
 
-    buildLayout->addWidget(tent);
-    buildLayout->addWidget(stas);
-    buildLayout->addWidget(fenc);
-    buildLayout->addWidget(ammo);
-    buildLayout->addWidget(fire);
-    buildLayout->addWidget(cras);
+    QVector<QCheckBox*> build;
+    build.append(new QCheckBox("Tents"));
+    build.append(new QCheckBox("Stashes"));
+    build.append(new QCheckBox("Hedgehog"));
+    build.append(new QCheckBox("Wooden Fences"));
+    build.append(new QCheckBox("Ammo Boxes"));
+    build.append(new QCheckBox("Camp Fires"));
+    build.append(new QCheckBox("Crash Sites"));
+    mapCheckBoxes(build, buildLayout);
 
     buildBox->setLayout(buildLayout);
     panelLayout->addWidget(buildBox);
 ///////////////////////////////ENTITIES////////////////////////////////////////
     QGroupBox*      entBox = new QGroupBox("Entities");
     QVBoxLayout*    entLayout = new QVBoxLayout;
-    QCheckBox*      anim = new QCheckBox("Animals");
-    QCheckBox*      play = new QCheckBox("Players");
-    QCheckBox*      zomb = new QCheckBox("Zombies");
-    /*QCheckBox*      ammo = new QCheckBox("Ammo Boxes");
-    QCheckBox*      fire = new QCheckBox("Camp Fires");
-    QCheckBox*      cras = new QCheckBox("Crash Sites");*/
 
-    entLayout->addWidget(anim);
-    entLayout->addWidget(play);
-    entLayout->addWidget(zomb);
-    /*entLayout->addWidget(ammo);
-    entLayout->addWidget(fire);
-    entLayout->addWidget(cras);*/
+    QVector<QCheckBox*> en;
+    en.append(new QCheckBox("Animals"));
+    en.append(new QCheckBox("Players"));
+    en.append(new QCheckBox("Useless Stuff"));
+
+    mapCheckBoxes(en, entLayout);
 
     entBox->setLayout(entLayout);
     panelLayout->addWidget(entBox);
 //////////////////////////////////////////////////////////////////////////////
+    auto m = veh + build + en;
+    loadCheckBoxes(m);
     panelLayout->addStretch(1);
-
     setLayout(panelLayout);
+}
+
+void SidePanel::updateCheckBox(QWidget *wgt)
+{
+    QCheckBox* d = static_cast<QCheckBox*>(wgt);
+
+    QSettings settings;
+    settings.setValue(d->text(),d->isChecked());
+}
+
+void SidePanel::mapCheckBoxes(QVector<QCheckBox *> &v, QVBoxLayout *bl)
+{
+    for(QVector<QCheckBox*>::iterator it = v.begin(); it!=v.end(); ++it)
+    {
+        connect((*it), SIGNAL(clicked()), psigManager, SLOT(map()));
+        psigManager->setMapping((*it), (*it));
+        bl->addWidget(*it);
+    }
+}
+
+void SidePanel::loadCheckBoxes(QVector<QCheckBox *> &v)
+{
+    QSettings settings;
+    for(QVector<QCheckBox*>::iterator it = v.begin(); it!=v.end(); ++it)
+    {
+        (*it)->setChecked(settings.value((*it)->text(), false).toBool());
+    }
 }
