@@ -1,6 +1,7 @@
 #include "interactivemap.h"
 #include <QDebug>
 #include <QtGlobal>
+#include <QSettings>
 
 InteractiveMap::InteractiveMap(QWidget* pwgt) : QWidget(pwgt)
 {
@@ -36,11 +37,24 @@ void InteractiveMap::paintEvent(QPaintEvent *pe)
     painter->translate(translate);
 
     painter->drawPixmap(0,0, *image);
-
-    for(auto it = worldState->entityArray.begin(); it!=worldState->entityArray.end();++it)
+    for(QVector<EntityData>::iterator it = worldState->entityArray.begin(); it!=worldState->entityArray.end();++it)
     {
-        if(((*it).entityType) == EntityData::type::car)
-            qDebug() << (*it).name;
+        if(getFilterValue((*it).entityType))
+        {
+            float x = (*it).coords.x();
+            float y = (*it).coords.y();
+            x = (((x) / (15360.0f / 975.0f)));
+            y = (((15360.0f - y) / (15360.0f / 970.0f)) - 4);
+
+            painter->setPen(QPen(Qt::red, qMax(int(8 * 1 / scale), 1), Qt::SolidLine));
+            painter->setFont(QFont("Arial", qMax(int(8 * 1 / scale), 1)));
+            qDebug() << 8 * 1 / scale;
+
+            painter->drawPoint(x,y);
+            if(getFilterValue(QString("name")))
+                painter->drawText(x,y,(*it).name);
+        }
+            //qDebug() << (*it).name;
     }
 //////////////////////////////////////////////////
     painter->end();
@@ -90,4 +104,16 @@ void InteractiveMap::wheelEvent(QWheelEvent *pe)
     QPointF dPos = pe->pos() - nPos;
 
     updateScale(dScale,dPos);
+}
+
+bool InteractiveMap::getFilterValue(EntityData::type t)
+{
+    QSettings settings;
+    return settings.value(QVariant(static_cast<int>(t)).toString(), false).toBool();
+}
+
+bool InteractiveMap::getFilterValue(QString t)
+{
+    QSettings settings;
+    return settings.value(t, false).toBool();
 }

@@ -13,7 +13,6 @@ class WorldState : public QObject
 public:
     explicit WorldState(QObject *parent = nullptr);
     QVector <EntityData> entityArray;
-    QMap <EntityData::type, QString> checkBoxRelations;
 private:
     QVector<quint32> masterOffsets;
     QVector<quint32> tableOffsets;

@@ -13,14 +13,6 @@ WorldState::WorldState(QObject *parent) : QObject(parent)
     tableOffsets.append(0x1fc);
 
     objTableAddress = 0xDAD8C0;
-
-    checkBoxRelations[EntityData::type::airplane] = "Airplanes";
-    checkBoxRelations[EntityData::type::ammoBox] = "Ammo Boxes";
-    checkBoxRelations[EntityData::type::animals] = "Animals";
-    checkBoxRelations[EntityData::type::campFire] = "Airplanes";
-    checkBoxRelations[EntityData::type::car] = "Airplanes";
-    checkBoxRelations[EntityData::type::crashSite] = "Airplanes";
-    checkBoxRelations[EntityData::type::fence] = "Airplanes";
 }
 
 void WorldState::loadDump()
@@ -93,7 +85,7 @@ void WorldState::handleEntity(quint32 entityAddress, MemoryAPI &mem)
         ed.entityType = EntityData::type::stash;
     else if(objName.indexOf("WoodenGate")!=-1 || objName.indexOf("WoodenFence")!=-1)
         ed.entityType = EntityData::type::fence;
-    else if(objName.indexOf("DZ_MedBox")!=-1 || objName.indexOf("DZ_AmmoBox"))
+    else if(objName.indexOf("DZ_MedBox")!=-1 || objName.indexOf("DZ_AmmoBox")!=-1)
         ed.entityType = EntityData::type::ammoBox;
     else if(objName.indexOf("Hedgehog_DZ")!=-1)
         ed.entityType = EntityData::type::hedgehog;

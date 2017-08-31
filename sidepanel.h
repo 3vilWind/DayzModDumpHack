@@ -8,6 +8,20 @@
 #include <QVBoxLayout>
 #include <QCheckBox>
 
+class FilterCheckBox : public QCheckBox
+{
+    Q_OBJECT
+public:
+    explicit FilterCheckBox(QWidget *parent = nullptr);
+    FilterCheckBox(QString name, QString et, QWidget *parent = nullptr);
+    FilterCheckBox(QString name, EntityData::type et, QWidget *parent = nullptr);
+    QString filterType;
+
+    void loadSetting();
+
+public slots:
+    void updateSetting(bool value);
+};
 
 class SidePanel : public QWidget
 {
@@ -15,16 +29,8 @@ class SidePanel : public QWidget
 public:
     explicit SidePanel(QWidget *parent = nullptr);
 
-
-public slots:
-    void updateCheckBox(QWidget* wgt);
-
-
 private:
-    QSignalMapper* psigManager;
-
-    void mapCheckBoxes(QVector<QCheckBox *> &v, QVBoxLayout* bl);
-    void loadCheckBoxes(QVector<QCheckBox *> &v);
+    void mapCheckBoxes(QVector<FilterCheckBox *> &v, QVBoxLayout* bl);
 };
 
 #endif // SIDEPANEL_H

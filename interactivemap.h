@@ -22,6 +22,9 @@ public:
     void updateScale(const qreal value, const QPointF& dpos);
     void updateTranslate(const QPointF& value);
 private:
+    bool getFilterValue(EntityData::type t);
+    bool getFilterValue(QString t);
+
     WorldState* worldState;
     QPainter* painter;
     QPixmap*  image;

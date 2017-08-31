@@ -7,24 +7,54 @@
 #include <QDebug>
 #include <QSettings>
 
+FilterCheckBox::FilterCheckBox(QString name, EntityData::type et, QWidget *parent): QCheckBox(parent)
+{
+    setText(name);
+    filterType = QVariant(static_cast<int>(et)).toString();
+
+    loadSetting();
+
+    connect(this, SIGNAL(clicked(bool)),this,SLOT(updateSetting(bool)));
+}
+
+FilterCheckBox::FilterCheckBox(QString name, QString et, QWidget *parent): QCheckBox(parent)
+{
+    setText(name);
+    filterType = et;
+
+    loadSetting();
+
+    connect(this, SIGNAL(clicked(bool)),this,SLOT(updateSetting(bool)));
+}
+
+void FilterCheckBox::loadSetting()
+{
+    QSettings settings;
+    setChecked(settings.value(QVariant(filterType).toString(), false).toBool());
+}
+
+void FilterCheckBox::updateSetting(bool value)
+{
+    QSettings settings;
+    settings.setValue(QVariant(filterType).toString(), value);
+}
+
 SidePanel::SidePanel(QWidget *parent) : QWidget(parent)
 {
-    psigManager = new QSignalMapper(this);
-    connect(psigManager, SIGNAL(mapped(QWidget*)), this, SLOT(updateCheckBox(QWidget*)));
 ////////////////////////////////////VEHICLES///////////////////////////////
     QVBoxLayout*    panelLayout = new QVBoxLayout;
 
     QGroupBox*  vehBox = new QGroupBox("Vehicles");
     QVBoxLayout*    vehLayout = new QVBoxLayout;
 
-    QVector<QCheckBox*> veh;
-    veh.append(new QCheckBox("Cars"));
-    veh.append(new QCheckBox("Motorcycles"));
-    veh.append(new QCheckBox("Airplanes"));
-    veh.append(new QCheckBox("Ships"));
-    veh.append(new QCheckBox("Helicopters"));
-    veh.append(new QCheckBox("Parachutes"));
-    veh.append(new QCheckBox("Tanks"));
+    QVector<FilterCheckBox*> veh;
+    veh.append(new FilterCheckBox("Cars", EntityData::type::car));
+    veh.append(new FilterCheckBox("Motorcycles", EntityData::type::motorcycle));
+    veh.append(new FilterCheckBox("Airplanes", EntityData::type::airplane));
+    veh.append(new FilterCheckBox("Ships", EntityData::type::ship));
+    veh.append(new FilterCheckBox("Helicopters", EntityData::type::helicopter));
+    veh.append(new FilterCheckBox("Parachutes", EntityData::type::parachute));
+    veh.append(new FilterCheckBox("Tanks", EntityData::type::tank));
 
     mapCheckBoxes(veh, vehLayout);
 
@@ -35,14 +65,14 @@ SidePanel::SidePanel(QWidget *parent) : QWidget(parent)
     QGroupBox*      buildBox = new QGroupBox("Buildings");
     QVBoxLayout*    buildLayout = new QVBoxLayout;
 
-    QVector<QCheckBox*> build;
-    build.append(new QCheckBox("Tents"));
-    build.append(new QCheckBox("Stashes"));
-    build.append(new QCheckBox("Hedgehog"));
-    build.append(new QCheckBox("Wooden Fences"));
-    build.append(new QCheckBox("Ammo Boxes"));
-    build.append(new QCheckBox("Camp Fires"));
-    build.append(new QCheckBox("Crash Sites"));
+    QVector<FilterCheckBox*> build;
+    build.append(new FilterCheckBox("Tents", EntityData::type::tent));
+    build.append(new FilterCheckBox("Stashes", EntityData::type::stash));
+    build.append(new FilterCheckBox("Hedgehog", EntityData::type::hedgehog));
+    build.append(new FilterCheckBox("Wooden Fences", EntityData::type::fence));
+    build.append(new FilterCheckBox("Ammo Boxes", EntityData::type::ammoBox));
+    build.append(new FilterCheckBox("Camp Fires", EntityData::type::campFire));
+    build.append(new FilterCheckBox("Crash Sites", EntityData::type::crashSite));
     mapCheckBoxes(build, buildLayout);
 
     buildBox->setLayout(buildLayout);
@@ -51,45 +81,36 @@ SidePanel::SidePanel(QWidget *parent) : QWidget(parent)
     QGroupBox*      entBox = new QGroupBox("Entities");
     QVBoxLayout*    entLayout = new QVBoxLayout;
 
-    QVector<QCheckBox*> en;
-    en.append(new QCheckBox("Animals"));
-    en.append(new QCheckBox("Players"));
-    en.append(new QCheckBox("Useless Stuff"));
+    QVector<FilterCheckBox*> en;
+    en.append(new FilterCheckBox("Animals", EntityData::type::animals));
+    en.append(new FilterCheckBox("Players", EntityData::type::players));
+    en.append(new FilterCheckBox("Useless Stuff", EntityData::type::stuff));
 
     mapCheckBoxes(en, entLayout);
 
     entBox->setLayout(entLayout);
     panelLayout->addWidget(entBox);
+//////////////////////////Other/////////////////////////////////////////////
+    QGroupBox*      othBox = new QGroupBox("Other");
+    QVBoxLayout*    othLayout = new QVBoxLayout;
+
+    QVector<FilterCheckBox*> oth;
+    oth.append(new FilterCheckBox("Object Names", "name"));
+
+    mapCheckBoxes(oth, othLayout);
+
+    othBox->setLayout(othLayout);
+    panelLayout->addWidget(othBox);
 //////////////////////////////////////////////////////////////////////////////
-    auto m = veh + build + en;
-    loadCheckBoxes(m);
+
     panelLayout->addStretch(1);
     setLayout(panelLayout);
 }
 
-void SidePanel::updateCheckBox(QWidget *wgt)
+void SidePanel::mapCheckBoxes(QVector<FilterCheckBox *> &v, QVBoxLayout *bl)
 {
-    QCheckBox* d = static_cast<QCheckBox*>(wgt);
-
-    QSettings settings;
-    settings.setValue(d->text(),d->isChecked());
-}
-
-void SidePanel::mapCheckBoxes(QVector<QCheckBox *> &v, QVBoxLayout *bl)
-{
-    for(QVector<QCheckBox*>::iterator it = v.begin(); it!=v.end(); ++it)
+    for(QVector<FilterCheckBox*>::iterator it = v.begin(); it!=v.end(); ++it)
     {
-        connect((*it), SIGNAL(clicked()), psigManager, SLOT(map()));
-        psigManager->setMapping((*it), (*it));
         bl->addWidget(*it);
-    }
-}
-
-void SidePanel::loadCheckBoxes(QVector<QCheckBox *> &v)
-{
-    QSettings settings;
-    for(QVector<QCheckBox*>::iterator it = v.begin(); it!=v.end(); ++it)
-    {
-        (*it)->setChecked(settings.value((*it)->text(), false).toBool());
     }
 }
