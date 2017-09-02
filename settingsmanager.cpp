@@ -30,7 +30,6 @@ QVariant SettingsManager::value(const QString &key, const QVariant &defaultValue
         QVariant s = settings.value(key,defaultValue);
         data.insert(key, s);
     }
-
     return data[key];
 }
 

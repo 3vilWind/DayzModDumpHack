@@ -7,9 +7,9 @@
 #include <QVariant>
 #include <QSettings>
 
-
-class SettingsManager
+class SettingsManager : public QObject
 {
+    Q_OBJECT
 public:
     SettingsManager();
     ~SettingsManager();
@@ -22,6 +22,8 @@ public:
 private:
     QMap<QString, QVariant> data;
     QSettings settings;
+signals:
+    void updateMap();
 };
 
 #endif // SETTINGSMANAGER_H

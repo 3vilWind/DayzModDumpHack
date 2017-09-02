@@ -2,9 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QMenu>
-#include "worldstate.h"
-#include "settingsmanager.h"
+#include "interactivemap.h"
 
 class MainWindow : public QMainWindow
 {
@@ -16,7 +14,7 @@ public:
 
 
 private:
-    WorldState* worldstate;
+    InteractiveMap* map;
 };
 
 #endif // MAINWINDOW_H

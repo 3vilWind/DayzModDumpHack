@@ -8,8 +8,7 @@ MemoryAPI::MemoryAPI(QObject *parent) : QObject(parent)
 }
 
 MemoryAPI::MemoryAPI(QString pathDump, QString pathIDX)
-{
-    //qDebug() << pathDump << pathIDX;
+{    
     loadDump(pathDump);
     loadIDX(pathIDX);
 }

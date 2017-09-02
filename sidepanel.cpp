@@ -35,7 +35,7 @@ void FilterCheckBox::loadSetting()
 
 void FilterCheckBox::updateSetting(bool value)
 {
-    SettingsManager::instance().setValue(QVariant(filterType).toString(), value);
+    SettingsManager::instance().setValue(filterType, value);
 }
 
 SidePanel::SidePanel(QWidget *parent) : QWidget(parent)
@@ -90,7 +90,7 @@ SidePanel::SidePanel(QWidget *parent) : QWidget(parent)
     entBox->setLayout(entLayout);
     panelLayout->addWidget(entBox);
 //////////////////////////Other/////////////////////////////////////////////
-    QGroupBox*      othBox = new QGroupBox("Other");
+/*    QGroupBox*      othBox = new QGroupBox("Other");
     QVBoxLayout*    othLayout = new QVBoxLayout;
 
     QVector<FilterCheckBox*> oth;
@@ -113,7 +113,7 @@ SidePanel::SidePanel(QWidget *parent) : QWidget(parent)
     othLayout->addWidget(sl1);
 
     othBox->setLayout(othLayout);
-    panelLayout->addWidget(othBox);
+    panelLayout->addWidget(othBox);*/
 //////////////////////////////////////////////////////////////////////////////
 
     panelLayout->addStretch(1);
@@ -125,6 +125,7 @@ void SidePanel::mapCheckBoxes(QVector<FilterCheckBox *> &v, QVBoxLayout *bl)
     for(QVector<FilterCheckBox*>::iterator it = v.begin(); it!=v.end(); ++it)
     {
         bl->addWidget(*it);
+        connect((*it), SIGNAL(clicked()), this, SLOT(updateMapS()));
     }
 }
 

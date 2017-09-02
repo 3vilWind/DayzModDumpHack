@@ -1,6 +1,9 @@
 #include "worldstate.h"
 #include <QDebug>
 #include <algorithm>
+#include <QCoreApplication>
+#include <QProgressDialog>
+#include <QWidget>
 
 WorldState::WorldState(QObject *parent) : QObject(parent)
 {
@@ -16,9 +19,19 @@ WorldState::WorldState(QObject *parent) : QObject(parent)
     objTableAddress = 0xDAD8C0;
 }
 
-void WorldState::loadDump()
+void WorldState::loadDump(const QString& dumpFile, const QString& idxFile)
 {
+    QProgressDialog progress;
+    progress.setCancelButton(nullptr);
+    progress.setLabelText("Loading dump...");
+    progress.setWindowModality(Qt::WindowModal);
+    progress.setMinimum(0);
+
+    progress.setMaximum(masterOffsets.length()+2);
+    progress.show();
+
     MemoryAPI mem("D:/ArmA2OA.exe_8000.dmp","D:/ArmA2OA.exe_8000.dmp.idx");
+    progress.setValue(1);
 
     for(auto mO = masterOffsets.begin(); mO != masterOffsets.end(); ++mO)
     {
@@ -33,27 +46,19 @@ void WorldState::loadDump()
                 quint32 entityAddress = mem.readPtr(fPtr + 4 * i);
 
                 handleEntity(entityAddress, mem);
+
+                QCoreApplication::processEvents();
             }
         }
+        progress.setValue(progress.value()+1);
     }
-    std::sort(entityArray.begin(),entityArray.end(), [](const EntityData& lhs, const EntityData& rhs){ return lhs.entityType < rhs.entityType; });
-    EntityData::type currentType = EntityData::type::invalid;
-    EntityRange currentRange;
-    for(QVector<EntityData>::const_iterator it = entityArray.cbegin(); it != entityArray.cend(); ++it)
-    {
-        if(currentType == (*it).entityType)
-            ++currentRange.end;
-        else
-        {
-            if(currentType != EntityData::type::invalid)
-                entityRanges[currentType] = currentRange;
+    initRanges();
+    progress.setValue(progress.value()+1);
+}
 
-            currentRange = EntityRange(it, it+1);
-            currentType = (*it).entityType;
-        }
-    }
-    if(!entityRanges.contains(currentType))
-        entityRanges[currentType] = currentRange;
+void WorldState::loadState(const QString &stateFile)
+{
+
 }
 
 void WorldState::handleEntity(quint32 entityAddress, MemoryAPI &mem)
@@ -126,6 +131,28 @@ void WorldState::handleEntity(quint32 entityAddress, MemoryAPI &mem)
     entityArray.append(ed);
 }
 
+void WorldState::initRanges()
+{
+    std::sort(entityArray.begin(),entityArray.end(), [](const EntityData& lhs, const EntityData& rhs){ return lhs.entityType < rhs.entityType; });
+    EntityData::type currentType = EntityData::type::invalid;
+    EntityRange currentRange;
+    for(QVector<EntityData>::const_iterator it = entityArray.cbegin(); it != entityArray.cend(); ++it)
+    {
+        if(currentType == (*it).entityType)
+            ++currentRange.end;
+        else
+        {
+            if(currentType != EntityData::type::invalid)
+                entityRanges[currentType] = currentRange;
+
+            currentRange = EntityRange(it, it+1);
+            currentType = (*it).entityType;
+        }
+    }
+    if(!entityRanges.contains(currentType))
+        entityRanges[currentType] = currentRange;
+}
+
 /*void WorldState::handleInventory(quint32 inventoryAddress, MemoryAPI &mem)
 {
     qint32 weaponTableSize = mem.readInt(inventoryAddress + 0x10);
@@ -138,13 +165,3 @@ void WorldState::handleEntity(quint32 entityAddress, MemoryAPI &mem)
 
     }
 }*/
-
-void WorldState::loadState()
-{
-
-}
-
-void WorldState::saveState()
-{
-
-}

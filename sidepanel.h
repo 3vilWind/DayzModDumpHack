@@ -35,6 +35,10 @@ private:
 public slots:
     void updateSlider(int v);
     void updatePen(int v);
+    void updateMapS(){ emit updateMap(); }
+
+signals:
+    void updateMap();
 };
 
 #endif // SIDEPANEL_H

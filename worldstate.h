@@ -21,7 +21,8 @@ class WorldState : public QObject
     Q_OBJECT
 public:
     explicit WorldState(QObject *parent = nullptr);
-
+    void loadDump(const QString& dumpFile, const QString& idxFile);
+    void loadState(const QString& stateFile);
     QMap <EntityData::type, EntityRange> entityRanges;
 private:
     QVector <EntityData> entityArray;
@@ -29,12 +30,8 @@ private:
     QVector<quint32> tableOffsets;
     quint32          objTableAddress;
     void handleEntity   (quint32 entityAddress, MemoryAPI& mem);
+    void initRanges();
     //void handleInventory(quint32 inventoryAddress, MemoryAPI& mem);
-
-public slots:
-    void loadDump();
-    void loadState();
-    void saveState();
 };
 
 #endif // WORLDSTATE_H
