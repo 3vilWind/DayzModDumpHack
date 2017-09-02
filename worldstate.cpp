@@ -1,5 +1,6 @@
 #include "worldstate.h"
 #include <QDebug>
+#include <algorithm>
 
 WorldState::WorldState(QObject *parent) : QObject(parent)
 {
@@ -17,7 +18,7 @@ WorldState::WorldState(QObject *parent) : QObject(parent)
 
 void WorldState::loadDump()
 {
-    MemoryAPI mem("D:/ArmA2OA.exe_12204.dmp","D:/ArmA2OA.exe_12204.dmp.idx");
+    MemoryAPI mem("D:/ArmA2OA.exe_8000.dmp","D:/ArmA2OA.exe_8000.dmp.idx");
 
     for(auto mO = masterOffsets.begin(); mO != masterOffsets.end(); ++mO)
     {
@@ -35,6 +36,24 @@ void WorldState::loadDump()
             }
         }
     }
+    std::sort(entityArray.begin(),entityArray.end(), [](const EntityData& lhs, const EntityData& rhs){ return lhs.entityType < rhs.entityType; });
+    EntityData::type currentType = EntityData::type::invalid;
+    EntityRange currentRange;
+    for(QVector<EntityData>::const_iterator it = entityArray.cbegin(); it != entityArray.cend(); ++it)
+    {
+        if(currentType == (*it).entityType)
+            ++currentRange.end;
+        else
+        {
+            if(currentType != EntityData::type::invalid)
+                entityRanges[currentType] = currentRange;
+
+            currentRange = EntityRange(it, it+1);
+            currentType = (*it).entityType;
+        }
+    }
+    if(!entityRanges.contains(currentType))
+        entityRanges[currentType] = currentRange;
 }
 
 void WorldState::handleEntity(quint32 entityAddress, MemoryAPI &mem)

@@ -8,9 +8,9 @@
 class EntityData
 {
 public:
-    enum class type {airplane, car, motorcycle, ship, helicopter, parachute, tank,
+    enum class type {first, airplane, car, motorcycle, ship, helicopter, parachute, tank,
                      tent, stash, fence, ammoBox, campFire, crashSite, animals,
-                     players, zombies, stuff, hedgehog, invalid};
+                     players, zombies, stuff, hedgehog, invalid, last};
 
     type entityType;
 
@@ -24,5 +24,4 @@ public:
     QPointF coords;
     QMap<QString, QString> additionalFields;
 };
-
 #endif // ENTITYDATA_H

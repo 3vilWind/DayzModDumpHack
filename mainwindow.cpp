@@ -10,6 +10,7 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
 {
+    SettingsManager initSettings;
     setMinimumSize(800,600);
     //showMaximized();
     worldstate = new WorldState(this);

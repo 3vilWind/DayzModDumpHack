@@ -31,6 +31,10 @@ public:
 
 private:
     void mapCheckBoxes(QVector<FilterCheckBox *> &v, QVBoxLayout* bl);
+
+public slots:
+    void updateSlider(int v);
+    void updatePen(int v);
 };
 
 #endif // SIDEPANEL_H

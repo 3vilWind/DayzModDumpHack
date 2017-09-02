@@ -1,7 +1,8 @@
 #include "interactivemap.h"
+#include "settingsmanager.h"
 #include <QDebug>
 #include <QtGlobal>
-#include <QSettings>
+#include <QMap>
 
 InteractiveMap::InteractiveMap(QWidget* pwgt) : QWidget(pwgt)
 {
@@ -37,24 +38,24 @@ void InteractiveMap::paintEvent(QPaintEvent *pe)
     painter->translate(translate);
 
     painter->drawPixmap(0,0, *image);
-    for(QVector<EntityData>::iterator it = worldState->entityArray.begin(); it!=worldState->entityArray.end();++it)
+
+    for(QMap<EntityData::type, EntityRange>::const_iterator it = worldState->entityRanges.cbegin(); it!=worldState->entityRanges.cend();++it)
     {
-        if(getFilterValue((*it).entityType))
+        if(getFilterValue(it.key()))
         {
-            float x = (*it).coords.x();
-            float y = (*it).coords.y();
-            x = (((x) / (15360.0f / 975.0f)));
-            y = (((15360.0f - y) / (15360.0f / 970.0f)) - 4);
+            for(QVector<EntityData>::const_iterator i = it.value().start; i!= it.value().end; ++i)
+            {
+                float x = (*i).coords.x();
+                float y = (*i).coords.y();
+                x = (((x) / (15360.0f / 975.0f)));
+                y = (((15360.0f - y) / (15360.0f / 970.0f)) - 4);
+                painter->setPen(QPen(Qt::red, SettingsManager::instance().value("pen").toInt(), Qt::SolidLine));
+                painter->setFont(QFont("Arial", SettingsManager::instance().value("slider").toInt()));
 
-            painter->setPen(QPen(Qt::red, qMax(int(8 * 1 / scale), 1), Qt::SolidLine));
-            painter->setFont(QFont("Arial", qMax(int(8 * 1 / scale), 1)));
-            qDebug() << 8 * 1 / scale;
-
-            painter->drawPoint(x,y);
-            if(getFilterValue(QString("name")))
-                painter->drawText(x,y,(*it).name);
+                if(getFilterValue(QString("name")))
+                    painter->drawText(x,y,(*i).name);
+            }
         }
-            //qDebug() << (*it).name;
     }
 //////////////////////////////////////////////////
     painter->end();
@@ -63,7 +64,7 @@ void InteractiveMap::paintEvent(QPaintEvent *pe)
 void InteractiveMap::updateScale(qreal value, const QPointF& dpos)
 {
     qreal newScale = scale * value;
-    if(newScale >= 0.5 && newScale <= 16)
+    if(newScale >= 0.5 && newScale <= 8)
     {
         scale=newScale;
         translate+=dpos/scale;
@@ -108,12 +109,15 @@ void InteractiveMap::wheelEvent(QWheelEvent *pe)
 
 bool InteractiveMap::getFilterValue(EntityData::type t)
 {
-    QSettings settings;
-    return settings.value(QVariant(static_cast<int>(t)).toString(), false).toBool();
+    return SettingsManager::instance().value(QVariant(static_cast<int>(t)).toString(), false).toBool();
 }
 
 bool InteractiveMap::getFilterValue(QString t)
 {
-    QSettings settings;
-    return settings.value(t, false).toBool();
+    return SettingsManager::instance().value(t, false).toBool();
+}
+
+void InteractiveMap::updateFilterEntities()
+{
+
 }

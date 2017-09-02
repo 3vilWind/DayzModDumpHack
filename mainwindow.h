@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QMenu>
 #include "worldstate.h"
+#include "settingsmanager.h"
 
 class MainWindow : public QMainWindow
 {

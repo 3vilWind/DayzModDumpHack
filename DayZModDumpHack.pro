@@ -30,7 +30,8 @@ SOURCES += \
     interactivemap.cpp \
     memoryapi.cpp \
     sidepanel.cpp \
-    entitydata.cpp
+    entitydata.cpp \
+    settingsmanager.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -38,6 +39,7 @@ HEADERS += \
     interactivemap.h \
     memoryapi.h \
     sidepanel.h \
-    entitydata.h
+    entitydata.h \
+    settingsmanager.h
 
 FORMS +=

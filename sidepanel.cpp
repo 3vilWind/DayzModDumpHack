@@ -5,7 +5,8 @@
 #include <QCheckBox>
 #include <QSignalMapper>
 #include <QDebug>
-#include <QSettings>
+#include "settingsmanager.h"
+#include <QSlider>
 
 FilterCheckBox::FilterCheckBox(QString name, EntityData::type et, QWidget *parent): QCheckBox(parent)
 {
@@ -29,14 +30,12 @@ FilterCheckBox::FilterCheckBox(QString name, QString et, QWidget *parent): QChec
 
 void FilterCheckBox::loadSetting()
 {
-    QSettings settings;
-    setChecked(settings.value(QVariant(filterType).toString(), false).toBool());
+    setChecked(SettingsManager::instance().value(QVariant(filterType).toString(), false).toBool());
 }
 
 void FilterCheckBox::updateSetting(bool value)
 {
-    QSettings settings;
-    settings.setValue(QVariant(filterType).toString(), value);
+    SettingsManager::instance().setValue(QVariant(filterType).toString(), value);
 }
 
 SidePanel::SidePanel(QWidget *parent) : QWidget(parent)
@@ -99,6 +98,20 @@ SidePanel::SidePanel(QWidget *parent) : QWidget(parent)
 
     mapCheckBoxes(oth, othLayout);
 
+    QSlider* sl = new QSlider(Qt::Horizontal);
+    sl->setRange(1,26);
+    sl->setPageStep(1);
+    connect(sl,SIGNAL(valueChanged(int)),this,SLOT(updateSlider(int)));
+
+    othLayout->addWidget(sl);
+
+    QSlider* sl1 = new QSlider(Qt::Horizontal);
+    sl1->setRange(1,26);
+    sl1->setPageStep(1);
+    connect(sl1,SIGNAL(valueChanged(int)),this,SLOT(updatePen(int)));
+
+    othLayout->addWidget(sl1);
+
     othBox->setLayout(othLayout);
     panelLayout->addWidget(othBox);
 //////////////////////////////////////////////////////////////////////////////
@@ -113,4 +126,16 @@ void SidePanel::mapCheckBoxes(QVector<FilterCheckBox *> &v, QVBoxLayout *bl)
     {
         bl->addWidget(*it);
     }
+}
+
+void SidePanel::updateSlider(int v)
+{
+    qDebug() << v;
+    SettingsManager::instance().setValue("slider",v);
+}
+
+void SidePanel::updatePen(int v)
+{
+    qDebug() << v;
+    SettingsManager::instance().setValue("pen",v);
 }
