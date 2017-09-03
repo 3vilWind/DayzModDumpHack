@@ -43,8 +43,7 @@ public:
 public slots:
     void loadState();
     void loadDump();
-    void dataReady();
-    void debug(int a);
+    void updateCache();
 private:
     WorldState* worldState;
 
@@ -53,12 +52,6 @@ private:
 
     bool getFilterValue(EntityData::type t);
     bool getFilterValue(QString t);
-
-    void updateFilterEntities();
-
-    void cacheRenderData();
-
-    QMap<EntityData::type, QMap<float, QPicture>> renderData;
 
     QPainter*   painter;
     QPixmap*    image;
@@ -70,8 +63,8 @@ private:
     QPointF translate;
     QPoint startMove;
 
-
-    QVector<EntityLayer> *cachingInput;
+    bool isCached;
+    QPixmap cache;
 };
 
 #endif // INTERACTIVEMAP_H

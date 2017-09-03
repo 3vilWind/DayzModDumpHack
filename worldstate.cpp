@@ -117,9 +117,9 @@ void WorldState::handleEntity(quint32 entityAddress, MemoryAPI &mem)
         ed.entityType = EntityData::type::campFire;
     else if(objName.indexOf("CrashSite")!= -1)
         ed.entityType = EntityData::type::crashSite;
-    else if(objName.indexOf("WildBoar")!= -1 || objName.indexOf("Rabbit")!= -1 ||
-            objName.indexOf("Cow")!= -1 || objName.indexOf("Sheep")!= -1 ||
-            objName.indexOf("Goat")!= -1 || objName.indexOf("Hen")!= -1)
+    else if(objName.indexOf("WildBoar")== 0 || objName.indexOf("Rabbit")== 0 ||
+            objName.indexOf("Cow")== 0 || objName.indexOf("Sheep")== 0 ||
+            objName.indexOf("Goat")== 0 || objName.indexOf("Hen")== 0)
         ed.entityType = EntityData::type::animals;
     else if(objName.indexOf("Survivor2_DZ")!= -1 || objName.indexOf("Sniper1_DZ")!=-1 ||
             objName.indexOf("Camo1_DZ")!=-1 || objName.indexOf("Survivor3_DZ")!=-1 ||

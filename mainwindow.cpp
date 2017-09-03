@@ -40,7 +40,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     setCentralWidget(spl);
 
-    connect(panel, SIGNAL(updateMap()), map, SLOT(update()));
+    connect(panel, SIGNAL(updateMap()), map, SLOT(updateCache()));
 }
 
 MainWindow::~MainWindow()

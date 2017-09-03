@@ -18,6 +18,7 @@ InteractiveMap::InteractiveMap(QWidget* pwgt) : QWidget(pwgt)
 
     worldState = nullptr;
     isActive = false;
+    isCached = false;
 }
 
 InteractiveMap::~InteractiveMap()
@@ -37,36 +38,42 @@ void InteractiveMap::paintEvent(QPaintEvent *pe)
         painter->setTransform(mat);
         painter->scale(scale, scale);
         painter->translate(translate);
-
         painter->drawPixmap(0,0, *image);
 
-        for(QMap<EntityData::type, QMap<float, QPicture>>::iterator it = renderData.begin();it!=renderData.end();++it)
+        if(!isCached)
         {
-            if(getFilterValue(it.key()))
+            cache = QPixmap(image->size()*4);
+            cache.setDevicePixelRatio(4);
+            cache.fill(Qt::transparent);
+            QPainter cachePaint(&cache);
+            for(QMap<EntityData::type, EntityRange>::const_iterator it = worldState->entityRanges.cbegin(); it!=worldState->entityRanges.cend();++it)
             {
-                //painter->scale(scale, scale);
-                painter->drawPicture(0, 0, it.value()[scale]);
-            }
-        }
-
-        /*for(QMap<EntityData::type, EntityRange>::const_iterator it = worldState->entityRanges.cbegin(); it!=worldState->entityRanges.cend();++it)
-        {
-            if(getFilterValue(it.key()))
-            {
-                for(QVector<EntityData>::const_iterator i = it.value().start; i!= it.value().end; ++i)
+                if(getFilterValue(it.key()))
                 {
-                    float x = (*i).coords.x();
-                    float y = (*i).coords.y();
-                    x = (((x) / (15360.0f / 975.0f)));
-                    y = (((15360.0f - y) / (15360.0f / 970.0f)) - 4);
-                    painter->setPen(QPen(Qt::red, SettingsManager::instance().value("pen").toInt(), Qt::SolidLine));
-                    painter->setFont(QFont("Arial", SettingsManager::instance().value("slider").toInt()));
+                    for(QVector<EntityData>::const_iterator i = it.value().start; i!= it.value().end; ++i)
+                    {
+                        float x = (*i).coords.x();
+                        float y = (*i).coords.y();
+                        x = (((x) / (15360.0f / 975.0f)));
+                        y = (((15360.0f - y) / (15360.0f / 970.0f)) - 4);
 
-                    if(getFilterValue(QString("name")))
-                        painter->drawText(x,y,(*i).name);
+                        QFont font("Arial");
+                        QPen  pen;
+                        pen.setWidthF(4/scale);
+                        pen.setStyle(Qt::SolidLine);
+                        font.setPointSizeF(qMax(float(8*1/scale),2.0f));
+                        cachePaint.setFont(font);
+                        cachePaint.setPen(pen);
+
+                        if(getFilterValue(QString("name")))
+                            cachePaint.drawText(x,y,(*i).name);
+                        cachePaint.drawPoint(x,y);
+                    }
                 }
             }
-        }*/
+            isCached = true;
+        }
+        painter->drawPixmap(0,0,cache);
     //////////////////////////////////////////////////
         painter->end();
     }
@@ -80,7 +87,9 @@ void InteractiveMap::updateScale(qreal value, const QPointF& dpos)
     {
         scale=newScale;
         translate+=dpos/scale;
+        isCached = false;
         update();
+
     }
 }
 
@@ -98,15 +107,20 @@ void InteractiveMap::updateTranslate(const QPointF& value)
 
 void InteractiveMap::mousePressEvent(QMouseEvent *pe)
 {
-    startMove = pe->pos();
+    if(pe->button() & Qt::LeftButton)
+        startMove = pe->pos();
 }
 
 void InteractiveMap::mouseMoveEvent(QMouseEvent *pe)
 {
-    updateTranslate(pe->pos() - startMove);
-    startMove = pe->pos();
+    if(pe->buttons() & Qt::LeftButton)
+    {
+        updateTranslate(pe->pos() - startMove);
+        startMove = pe->pos();
 
-    update();
+        update();
+    }
+
 }
 
 void InteractiveMap::wheelEvent(QWheelEvent *pe)
@@ -129,9 +143,10 @@ bool InteractiveMap::getFilterValue(QString t)
     return SettingsManager::instance().value(t, false).toBool();
 }
 
-void InteractiveMap::updateFilterEntities()
+void InteractiveMap::updateCache()
 {
-
+    isCached = false;
+    update();
 }
 
 void InteractiveMap::loadDump()
@@ -140,8 +155,7 @@ void InteractiveMap::loadDump()
 
     worldState = new WorldState;
     worldState->loadDump("123", "134");
-    cacheRenderData();
-    //isActive = true;
+    isActive = true;
     //worldState->loadDump(dumpFile, idxFile);
 }
 
@@ -153,67 +167,4 @@ void InteractiveMap::loadState()
     worldState->loadState("123");
     isActive = true;
     //worldState->loadState(stateFile);
-}
-
-void InteractiveMap::cacheRenderData()
-{
-    cachingInput = new QVector<EntityLayer>;
-
-    for(QMap<EntityData::type, EntityRange>::iterator it = worldState->entityRanges.begin(); it!=worldState->entityRanges.end(); ++it)
-    {
-        for(float i = minScale; i<=maxScale;i*=scaleStep)
-        {
-            renderData[it.key()][i] = QPicture();
-            EntityLayer obj(&(*it), i, &renderData[it.key()][i]);
-            cachingInput->append(obj);
-        }
-    }
-    QFuture<void> future = QtConcurrent::map(*cachingInput, &EntityLayer::renderToPixmap);
-    QFutureWatcher<void>* watcher = new QFutureWatcher<void>(this);
-    connect(watcher, SIGNAL(finished()), this, SLOT(dataReady()));
-    //connect(&watcher, &QFutureWatcher<void>::finished, this, &InteractiveMap::dataReady);
-    connect(watcher, &QFutureWatcher<void>::progressValueChanged, this, &InteractiveMap::debug);
-    watcher->setFuture(future);
-}
-
-void InteractiveMap::debug(int a)
-{
-    qDebug() << a;
-}
-
-void InteractiveMap::dataReady()
-{
-    qDebug() << "READY";
-    isActive = true;
-    update();
-}
-
-void EntityLayer::renderToPixmap()
-{
-    //pixmap->fill(Qt::transparent);
-    QPainter painter(pixmap);
-
-
-    for(QVector<EntityData>::const_iterator i = range->start; i!= range->end; ++i)
-    {
-        //painter.scale(1/scale, 1/scale);
-
-
-        QFont f("Arial");
-        QPen  p;
-        p.setWidthF(4/scale);
-        p.setStyle(Qt::SolidLine);
-        painter.setPen(p);
-        f.setPointSizeF(qMax(float(8*1/scale),2.0f));
-        painter.setFont(f);
-        //painter.setRenderHint(QPainter::Antialiasing);
-        float x = (*i).coords.x();
-        float y = (*i).coords.y();
-        x = (((x) / (15360.0f / 975.0f)));
-        y = (((15360.0f - y) / (15360.0f / 970.0f)) - 4);
-
-        //if(SettingsManager::instance().value(QString("name"), false).toBool())
-        painter.drawText(x,y,(*i).name);
-        painter.drawPoint(x,y);
-    }
 }

@@ -90,7 +90,7 @@ SidePanel::SidePanel(QWidget *parent) : QWidget(parent)
     entBox->setLayout(entLayout);
     panelLayout->addWidget(entBox);
 //////////////////////////Other/////////////////////////////////////////////
-/*    QGroupBox*      othBox = new QGroupBox("Other");
+    QGroupBox*      othBox = new QGroupBox("Other");
     QVBoxLayout*    othLayout = new QVBoxLayout;
 
     QVector<FilterCheckBox*> oth;
@@ -98,7 +98,7 @@ SidePanel::SidePanel(QWidget *parent) : QWidget(parent)
 
     mapCheckBoxes(oth, othLayout);
 
-    QSlider* sl = new QSlider(Qt::Horizontal);
+    /*QSlider* sl = new QSlider(Qt::Horizontal);
     sl->setRange(1,26);
     sl->setPageStep(1);
     connect(sl,SIGNAL(valueChanged(int)),this,SLOT(updateSlider(int)));
@@ -110,10 +110,10 @@ SidePanel::SidePanel(QWidget *parent) : QWidget(parent)
     sl1->setPageStep(1);
     connect(sl1,SIGNAL(valueChanged(int)),this,SLOT(updatePen(int)));
 
-    othLayout->addWidget(sl1);
+    othLayout->addWidget(sl1);*/
 
     othBox->setLayout(othLayout);
-    panelLayout->addWidget(othBox);*/
+    panelLayout->addWidget(othBox);
 //////////////////////////////////////////////////////////////////////////////
 
     panelLayout->addStretch(1);
