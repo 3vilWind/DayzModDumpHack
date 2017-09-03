@@ -23,6 +23,7 @@ public:
     explicit WorldState(QObject *parent = nullptr);
     void loadDump(const QString& dumpFile, const QString& idxFile);
     void loadState(const QString& stateFile);
+    void saveState(const QString& stateFile);
     QMap <EntityData::type, EntityRange> entityRanges;
 private:
     QVector <EntityData> entityArray;

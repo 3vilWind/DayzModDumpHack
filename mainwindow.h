@@ -11,10 +11,13 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-
-
 private:
     InteractiveMap* map;
+
+public slots:
+    void loadDump();
+    void loadState();
+    void saveWorldState();
 };
 
 #endif // MAINWINDOW_H

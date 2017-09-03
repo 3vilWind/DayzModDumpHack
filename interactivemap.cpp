@@ -11,13 +11,14 @@ InteractiveMap::InteractiveMap(QWidget* pwgt) : QWidget(pwgt)
 
     scale = 1;
 
+    setUpdatesEnabled(false);
+
     QPalette pal;
     pal.setColor(QPalette::Background,QColor(Qt::GlobalColor::black));
     setPalette(pal);
     setAutoFillBackground(true);
 
     worldState = nullptr;
-    isActive = false;
     isCached = false;
 }
 
@@ -30,54 +31,52 @@ InteractiveMap::~InteractiveMap()
 
 void InteractiveMap::paintEvent(QPaintEvent *pe)
 {
-    if(isActive)
+    renderMutex.lock();
+    painter->begin(this);
+//////////////////////////////////////////////////
+    QTransform mat;
+    painter->setTransform(mat);
+    painter->scale(scale, scale);
+    painter->translate(translate);
+    painter->drawPixmap(0,0, *image);
+
+    if(!isCached)
     {
-        painter->begin(this);
-    //////////////////////////////////////////////////
-        QTransform mat;
-        painter->setTransform(mat);
-        painter->scale(scale, scale);
-        painter->translate(translate);
-        painter->drawPixmap(0,0, *image);
-
-        if(!isCached)
+        cache = QPixmap(image->size()*4);
+        cache.setDevicePixelRatio(4);
+        cache.fill(Qt::transparent);
+        QPainter cachePaint(&cache);
+        for(QMap<EntityData::type, EntityRange>::const_iterator it = worldState->entityRanges.cbegin(); it!=worldState->entityRanges.cend();++it)
         {
-            cache = QPixmap(image->size()*4);
-            cache.setDevicePixelRatio(4);
-            cache.fill(Qt::transparent);
-            QPainter cachePaint(&cache);
-            for(QMap<EntityData::type, EntityRange>::const_iterator it = worldState->entityRanges.cbegin(); it!=worldState->entityRanges.cend();++it)
+            if(getFilterValue(it.key()))
             {
-                if(getFilterValue(it.key()))
+                for(QVector<EntityData>::const_iterator i = it.value().start; i!= it.value().end; ++i)
                 {
-                    for(QVector<EntityData>::const_iterator i = it.value().start; i!= it.value().end; ++i)
-                    {
-                        float x = (*i).coords.x();
-                        float y = (*i).coords.y();
-                        x = (((x) / (15360.0f / 975.0f)));
-                        y = (((15360.0f - y) / (15360.0f / 970.0f)) - 4);
+                    float x = (*i).coords.x();
+                    float y = (*i).coords.y();
+                    x = (((x) / (15360.0f / 975.0f)));
+                    y = (((15360.0f - y) / (15360.0f / 970.0f)) - 4);
 
-                        QFont font("Arial");
-                        QPen  pen;
-                        pen.setWidthF(4/scale);
-                        pen.setStyle(Qt::SolidLine);
-                        font.setPointSizeF(qMax(float(8*1/scale),2.0f));
-                        cachePaint.setFont(font);
-                        cachePaint.setPen(pen);
+                    QFont font("Arial");
+                    QPen  pen;
+                    pen.setWidthF(4/scale);
+                    pen.setStyle(Qt::SolidLine);
+                    font.setPointSizeF(qMax(float(8*1/scale),2.0f));
+                    cachePaint.setFont(font);
+                    cachePaint.setPen(pen);
 
-                        if(getFilterValue(QString("name")))
-                            cachePaint.drawText(x,y,(*i).name);
-                        cachePaint.drawPoint(x,y);
-                    }
+                    if(getFilterValue(QString("name")))
+                        cachePaint.drawText(x,y,(*i).name);
+                    cachePaint.drawPoint(x,y);
                 }
             }
-            isCached = true;
         }
-        painter->drawPixmap(0,0,cache);
-    //////////////////////////////////////////////////
-        painter->end();
+        isCached = true;
     }
-
+    painter->drawPixmap(0,0,cache);
+//////////////////////////////////////////////////
+    painter->end();
+    renderMutex.unlock();
 }
 
 void InteractiveMap::updateScale(qreal value, const QPointF& dpos)
@@ -87,9 +86,7 @@ void InteractiveMap::updateScale(qreal value, const QPointF& dpos)
     {
         scale=newScale;
         translate+=dpos/scale;
-        isCached = false;
-        update();
-
+        updateCache();
     }
 }
 
@@ -97,12 +94,7 @@ void InteractiveMap::updateTranslate(const QPointF& value)
 {
     QPointF newV = translate + (value * 1/scale);
     translate = newV;
-
-    //if(newX >= -image->width() && newX <= image->width())
-    //    translate.setX(newX);
-
-    //if(newY >= -image->height() && newY <= image->height())
-    //    translate.setY(newY);
+    update();
 }
 
 void InteractiveMap::mousePressEvent(QMouseEvent *pe)
@@ -117,10 +109,7 @@ void InteractiveMap::mouseMoveEvent(QMouseEvent *pe)
     {
         updateTranslate(pe->pos() - startMove);
         startMove = pe->pos();
-
-        update();
     }
-
 }
 
 void InteractiveMap::wheelEvent(QWheelEvent *pe)
@@ -149,22 +138,36 @@ void InteractiveMap::updateCache()
     update();
 }
 
-void InteractiveMap::loadDump()
+void InteractiveMap::loadDump(QString dumpFile, QString idxFile)
 {
-    delete worldState;
+    setUpdatesEnabled(false);
+    renderMutex.lock();
 
-    worldState = new WorldState;
-    worldState->loadDump("123", "134");
-    isActive = true;
-    //worldState->loadDump(dumpFile, idxFile);
+    delete worldState;
+    worldState = new WorldState(this);
+    worldState->loadDump(dumpFile, idxFile);
+
+    renderMutex.unlock();
+    setUpdatesEnabled(true);
+    updateCache();
 }
 
-void InteractiveMap::loadState()
+void InteractiveMap::loadState(QString stateFile)
 {
+    setUpdatesEnabled(false);
+    renderMutex.lock();
+
     delete worldState;
 
-    worldState = new WorldState;
-    worldState->loadState("123");
-    isActive = true;
-    //worldState->loadState(stateFile);
+    worldState = new WorldState(this);
+    worldState->loadState(stateFile);
+
+    renderMutex.unlock();
+    setUpdatesEnabled(true);
+    updateCache();
+}
+
+void InteractiveMap::saveState(QString stateFile)
+{
+    worldState->saveState(stateFile);
 }

@@ -24,7 +24,7 @@ void WorldState::loadDump(const QString& dumpFile, const QString& idxFile)
     QProgressDialog progress;
     progress.setCancelButton(nullptr);
     progress.setLabelText("Loading dump...");
-    progress.setWindowModality(Qt::WindowModal);
+    progress.setModal(true);
     progress.setMinimum(0);
 
     progress.setMaximum(masterOffsets.length()+2);
@@ -57,6 +57,11 @@ void WorldState::loadDump(const QString& dumpFile, const QString& idxFile)
 }
 
 void WorldState::loadState(const QString &stateFile)
+{
+
+}
+
+void WorldState::saveState(const QString &stateFile)
 {
 
 }

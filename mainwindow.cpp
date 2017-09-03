@@ -14,15 +14,14 @@ MainWindow::MainWindow(QWidget *parent) :
     setMinimumSize(800,600);
     SettingsManager initSettings;
 
-
     map = new InteractiveMap;
 
     QMenu *pFile = new QMenu("File");
     QMenu *pHelp = new QMenu("Help");
 
-    pFile->addAction("Load dump", map, &InteractiveMap::loadDump);
-    pFile->addAction("Load State", map, &InteractiveMap::loadState);
-    //pFile->addAction("Save state", worldstate, SLOT(saveState()));
+    pFile->addAction("Load dump", this, &MainWindow::loadDump);
+    pFile->addAction("Load State", this, &MainWindow::loadState);
+    pFile->addAction("Save state", this, &MainWindow::saveWorldState);
 
     menuBar()->addMenu(pFile);
     menuBar()->addMenu(pHelp);
@@ -45,4 +44,19 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+}
+
+void MainWindow::loadDump()
+{
+    map->loadDump("", "");
+}
+
+void MainWindow::loadState()
+{
+    map->loadState("");
+}
+
+void MainWindow::saveWorldState()
+{
+    map->saveState("");
 }

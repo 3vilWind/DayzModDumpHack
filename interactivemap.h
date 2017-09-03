@@ -11,6 +11,7 @@
 #include <QMap>
 #include <QtConcurrent>
 #include <QPicture>
+#include <QMutex>
 #include "worldstate.h"
 
 class EntityLayer
@@ -35,14 +36,13 @@ public:
     InteractiveMap(QWidget* pwgt = nullptr);
     virtual ~InteractiveMap();
 
-    bool isActive;
-
     const float minScale = 0.5;
     const float maxScale = 8.0;
     const float scaleStep= 2.0;
 public slots:
-    void loadState();
-    void loadDump();
+    void loadState(QString stateFile);
+    void loadDump(QString dumpFile, QString idxFile);
+    void saveState(QString stateFile);
     void updateCache();
 private:
     WorldState* worldState;
@@ -65,6 +65,8 @@ private:
 
     bool isCached;
     QPixmap cache;
+
+    QMutex renderMutex;
 };
 
 #endif // INTERACTIVEMAP_H
