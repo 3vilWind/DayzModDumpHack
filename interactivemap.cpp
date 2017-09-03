@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QtGlobal>
 #include <QMap>
+#include <QtConcurrent>
 
 InteractiveMap::InteractiveMap(QWidget* pwgt) : QWidget(pwgt)
 {
@@ -20,6 +21,7 @@ InteractiveMap::InteractiveMap(QWidget* pwgt) : QWidget(pwgt)
 
     worldState = nullptr;
     isCached = false;
+    input = nullptr;
 }
 
 InteractiveMap::~InteractiveMap()
@@ -101,8 +103,16 @@ void InteractiveMap::mousePressEvent(QMouseEvent *pe)
 {
     if(pe->buttons() & Qt::LeftButton)
         startMove = pe->pos();
-    //else if(pe->buttons() & Qt::MidButton)
-
+    else if(pe->buttons() & Qt::MidButton)
+    {
+        QPointF pos = pe->pos()/scale - translate;
+        if(pos.x()>=0.0f && pos.x()<=image->width() && pos.y()>=0.0f && pos.y()<=image->height())
+        {
+            pos.rx() = pos.x() * (15360.0f / 975.0f);
+            pos.ry() = -((15360.0f/970.0f)*(pos.y()+4.0f)-15360.0f);
+            findCloseObjects(pos);
+        }
+    }
 }
 
 void InteractiveMap::mouseMoveEvent(QMouseEvent *pe)
@@ -179,12 +189,62 @@ void InteractiveMap::closeState()
 {
     setUpdatesEnabled(false);
     renderMutex.lock();
+    closeObjWatcher.cancel();
+    closeObjWatcher.waitForFinished();
 
     delete worldState;
     worldState = nullptr;
+
     cache = QPixmap();
+    isCached = false;
 
     renderMutex.unlock();
 
     emit saveStateChanged(false);
+}
+
+void addToAnswer(QString& result, const QString& interm)
+{
+    if(!interm.isEmpty())
+        result += "\n" + interm;
+}
+
+void InteractiveMap::findCloseObjects(QPointF coords)
+{
+    if(!closeObjWatcher.isRunning())
+    {
+        input = new QVector<CloseObjects>;
+        for(QMap<EntityData::type, EntityRange>::iterator it = worldState->entityRanges.begin(); it!=worldState->entityRanges.end();++it)
+        {
+            if(getFilterValue(it.key()))
+            {
+                CloseObjects obj(&it.value(), coords);
+                input->append(obj);
+            }
+        }
+        closeObjFuture = QtConcurrent::mappedReduced(*input, &CloseObjects::findCloseObjects, addToAnswer);
+
+        connect(&closeObjWatcher, &QFutureWatcher<QString>::finished, this, &InteractiveMap::sendCloseObjects);
+        closeObjWatcher.setFuture(closeObjFuture);
+    }
+}
+
+void InteractiveMap::sendCloseObjects()
+{
+    emit showCloseObjects(closeObjWatcher.result());
+    delete input;
+    input = nullptr;
+}
+
+QString CloseObjects::findCloseObjects() const
+{
+    QString result;
+    for(QVector<EntityData>::const_iterator it = range->start; it != range->end; ++it)
+    {
+        float len = qSqrt(qPow((it->coords.x() - coords.x()),2) + qPow((it->coords.y() - coords.y()),2));
+        if(len <= 500)
+            result+= "\n" + it->name + "\n" + QVariant(it->coords.x()/100).toString() + " " + QVariant((15360 - it->coords.y())/100).toString();
+
+    }
+    return result;
 }

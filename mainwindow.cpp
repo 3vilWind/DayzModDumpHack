@@ -35,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     SidePanel* panel = new SidePanel;
 
-    panel->setMinimumWidth(200);
+    panel->setMinimumWidth(250);
     panel->setMaximumWidth(panel->minimumWidth());
     panel->resize(panel->minimumWidth(),panel->height());
 
@@ -47,6 +47,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(panel, SIGNAL(updateMap()), map, SLOT(updateCache()));
     connect(map, SIGNAL(saveStateChanged(bool)), saveAct, SLOT(setEnabled(bool)));
     connect(map, SIGNAL(saveStateChanged(bool)), closeAct, SLOT(setEnabled(bool)));
+    connect(map, SIGNAL(showCloseObjects(QString)), panel->closeObjects, SLOT(setText(QString)));
+    //connect(&map->closeObjWatcher, SIGNAL(finished()), panel, SLOT(setText));
 }
 
 MainWindow::~MainWindow()

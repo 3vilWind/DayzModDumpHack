@@ -6,7 +6,7 @@
 #include <QSignalMapper>
 #include <QDebug>
 #include "settingsmanager.h"
-#include <QSlider>
+#include <QLabel>
 
 FilterCheckBox::FilterCheckBox(QString name, EntityData::type et, QWidget *parent): QCheckBox(parent)
 {
@@ -98,6 +98,9 @@ SidePanel::SidePanel(QWidget *parent) : QWidget(parent)
 
     mapCheckBoxes(oth, othLayout);
 
+    closeObjects = new QLabel("Press mid button on map");
+    othLayout->addWidget(closeObjects);
+
     /*QSlider* sl = new QSlider(Qt::Horizontal);
     sl->setRange(1,26);
     sl->setPageStep(1);
@@ -127,16 +130,4 @@ void SidePanel::mapCheckBoxes(QVector<FilterCheckBox *> &v, QVBoxLayout *bl)
         bl->addWidget(*it);
         connect((*it), SIGNAL(clicked()), this, SLOT(updateMapS()));
     }
-}
-
-void SidePanel::updateSlider(int v)
-{
-    qDebug() << v;
-    SettingsManager::instance().setValue("slider",v);
-}
-
-void SidePanel::updatePen(int v)
-{
-    qDebug() << v;
-    SettingsManager::instance().setValue("pen",v);
 }

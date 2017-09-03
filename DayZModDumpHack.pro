@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui xml concurrent widgets
+QT       += core gui xml widgets concurrent
 
 TARGET = DayZModDumpHack
 TEMPLATE = app

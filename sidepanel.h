@@ -7,6 +7,7 @@
 #include <QSignalMapper>
 #include <QVBoxLayout>
 #include <QCheckBox>
+#include <QLabel>
 
 class FilterCheckBox : public QCheckBox
 {
@@ -28,13 +29,11 @@ class SidePanel : public QWidget
     Q_OBJECT
 public:
     explicit SidePanel(QWidget *parent = nullptr);
-
+    QLabel* closeObjects;
 private:
     void mapCheckBoxes(QVector<FilterCheckBox *> &v, QVBoxLayout* bl);
 
 public slots:
-    void updateSlider(int v);
-    void updatePen(int v);
     void updateMapS(){ emit updateMap(); }
 
 signals:
