@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QVector>
 #include <QMap>
+#include <QtXml>
 #include "memoryapi.h"
 #include "entitydata.h"
 
@@ -16,15 +17,17 @@ public:
     QVector<EntityData>::const_iterator end;
 };
 
-class WorldState : public QObject
+class WorldState
 {
-    Q_OBJECT
 public:
-    explicit WorldState(QObject *parent = nullptr);
-    void loadDump(const QString& dumpFile, const QString& idxFile);
-    void loadState(const QString& stateFile);
+    WorldState(const QString& dumpFile, const QString& idxFile);
+    WorldState(const QString& stateFile);
+
     void saveState(const QString& stateFile);
+
     QMap <EntityData::type, EntityRange> entityRanges;
+
+    QString worldName;
 private:
     QVector <EntityData> entityArray;
     QVector<quint32> masterOffsets;
@@ -32,6 +35,9 @@ private:
     quint32          objTableAddress;
     void handleEntity   (quint32 entityAddress, MemoryAPI& mem);
     void initRanges();
+    void initOffsets();
+
+    QDomElement makeElement(QDomDocument& domDoc, const QString& name, const QString& strData = QString());
     //void handleInventory(quint32 inventoryAddress, MemoryAPI& mem);
 };
 

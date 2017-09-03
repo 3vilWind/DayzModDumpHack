@@ -18,6 +18,7 @@ public slots:
     void loadDump();
     void loadState();
     void saveWorldState();
+    void closeWorldState();
 };
 
 #endif // MAINWINDOW_H

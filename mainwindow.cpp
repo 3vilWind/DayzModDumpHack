@@ -7,6 +7,7 @@
 #include <QHBoxLayout>
 #include <QSplitter>
 #include <QMenu>
+#include <QFileDialog>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
@@ -21,7 +22,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     pFile->addAction("Load dump", this, &MainWindow::loadDump);
     pFile->addAction("Load State", this, &MainWindow::loadState);
-    pFile->addAction("Save state", this, &MainWindow::saveWorldState);
+    QAction* saveAct = pFile->addAction("Save state", this, &MainWindow::saveWorldState);
+    saveAct->setEnabled(false);
+    QAction* closeAct = pFile->addAction("Close state", this, &MainWindow::closeWorldState);
+    closeAct->setEnabled(false);
+    pFile->addAction("Exit", QCoreApplication::instance(), SLOT(quit()));
 
     menuBar()->addMenu(pFile);
     menuBar()->addMenu(pHelp);
@@ -40,6 +45,8 @@ MainWindow::MainWindow(QWidget *parent) :
     setCentralWidget(spl);
 
     connect(panel, SIGNAL(updateMap()), map, SLOT(updateCache()));
+    connect(map, SIGNAL(saveStateChanged(bool)), saveAct, SLOT(setEnabled(bool)));
+    connect(map, SIGNAL(saveStateChanged(bool)), closeAct, SLOT(setEnabled(bool)));
 }
 
 MainWindow::~MainWindow()
@@ -48,15 +55,27 @@ MainWindow::~MainWindow()
 
 void MainWindow::loadDump()
 {
-    map->loadDump("", "");
+    QString dump = QFileDialog::getOpenFileName(nullptr, "Load .dmp file"),
+            idx  = QFileDialog::getOpenFileName(nullptr, "Load .idx file");
+    if(!dump.isEmpty() && !idx.isEmpty())
+    map->loadDump(dump, idx);
 }
 
 void MainWindow::loadState()
 {
-    map->loadState("");
+    QString st = QFileDialog::getOpenFileName(nullptr, "Load state file");
+    if(!st.isEmpty())
+        map->loadState(st);
 }
 
 void MainWindow::saveWorldState()
 {
-    map->saveState("");
+    QString st = QFileDialog::getSaveFileName(nullptr, "Save state");
+    if(!st.isEmpty())
+        map->saveState(st);
+}
+
+void MainWindow::closeWorldState()
+{
+    map->closeState();
 }

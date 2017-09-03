@@ -4,9 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui concurrent
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT       += core gui xml concurrent widgets
 
 TARGET = DayZModDumpHack
 TEMPLATE = app

@@ -2,7 +2,7 @@
 
 EntityData::EntityData()
 {
-
+    entityType = type::invalid;
 }
 
 EntityData::EntityData(QString n, QPointF c, type t)

@@ -4,23 +4,12 @@
 #include <QCoreApplication>
 #include <QProgressDialog>
 #include <QWidget>
+#include <QtXml>
 
-WorldState::WorldState(QObject *parent) : QObject(parent)
+WorldState::WorldState(const QString& dumpFile, const QString& idxFile)
 {
-    masterOffsets.append(0x87c + 0x4);
-    masterOffsets.append(0xb20 + 0x4);
-    masterOffsets.append(0xdc4 + 0x4);
+    initOffsets();
 
-    tableOffsets.append(0x4);
-    tableOffsets.append(0xac);
-    tableOffsets.append(0x154);
-    tableOffsets.append(0x1fc);
-
-    objTableAddress = 0xDAD8C0;
-}
-
-void WorldState::loadDump(const QString& dumpFile, const QString& idxFile)
-{
     QProgressDialog progress;
     progress.setCancelButton(nullptr);
     progress.setLabelText("Loading dump...");
@@ -30,7 +19,7 @@ void WorldState::loadDump(const QString& dumpFile, const QString& idxFile)
     progress.setMaximum(masterOffsets.length()+2);
     progress.show();
 
-    MemoryAPI mem("D:/ArmA2OA.exe_8000.dmp","D:/ArmA2OA.exe_8000.dmp.idx");
+    MemoryAPI mem(dumpFile,idxFile);
     progress.setValue(1);
 
     for(auto mO = masterOffsets.begin(); mO != masterOffsets.end(); ++mO)
@@ -53,17 +42,136 @@ void WorldState::loadDump(const QString& dumpFile, const QString& idxFile)
         progress.setValue(progress.value()+1);
     }
     initRanges();
+    worldName = "chernarus";
     progress.setValue(progress.value()+1);
 }
 
-void WorldState::loadState(const QString &stateFile)
+WorldState::WorldState(const QString &stateFile)
 {
+    initOffsets();
 
+    QProgressDialog progress;
+    progress.setCancelButton(nullptr);
+    progress.setLabelText("Loading dump...");
+    progress.setModal(true);
+    progress.setMinimum(0);
+
+    progress.setMaximum(masterOffsets.length()+2);
+    progress.show();
+
+    QDomDocument domDoc;
+    QFile        file(stateFile);
+
+    if(file.open(QIODevice::ReadOnly)) {
+        if(domDoc.setContent(&file)) {
+            QDomElement rootElement = domDoc.documentElement();
+            worldName = rootElement.attribute("name", "chernarus");
+            progress.setMaximum(rootElement.childNodes().count());
+            //Iterate entities
+            for(QDomNode domNode = rootElement.firstChild(); !domNode.isNull(); domNode = domNode.nextSibling())
+            {
+                if(domNode.isElement()) {
+                    EntityData ent;
+                    //ent.name
+                    QDomElement entity = domNode.toElement();
+                    for(QDomNode entNode = entity.firstChild(); !entNode.isNull(); entNode = entNode.nextSibling())
+                    {
+                        if(entNode.isElement())
+                        {
+                            QDomElement entElem = entNode.toElement();
+                            if(entElem.tagName() == "name")
+                            {
+                                ent.name = entElem.text();
+                            }else if(entElem.tagName() == "type")
+                            {
+                                ent.entityType = static_cast<EntityData::type>(entElem.text().toInt());
+                            }
+                            else if(entElem.tagName() == "coords")
+                            {
+                                for(QDomElement entText = entElem.firstChild().toElement(); !entText.isNull(); entText = entText.nextSibling().toElement())
+                                {
+                                    if(entText.tagName() == "x")
+                                        ent.coords.setX(entText.text().toFloat());
+                                    else if(entText.tagName() == "y")
+                                        ent.coords.setY(entText.text().toFloat());
+                                }
+
+                            }
+                        }
+                        QCoreApplication::processEvents();
+                    }
+                    entityArray.append(ent);
+                }
+                progress.setValue(progress.value()+1);
+            }
+
+        }
+        file.close();
+        initRanges();
+    }
+}
+
+void WorldState::initOffsets()
+{
+    masterOffsets.append(0x87c + 0x4);
+    masterOffsets.append(0xb20 + 0x4);
+    masterOffsets.append(0xdc4 + 0x4);
+
+    tableOffsets.append(0x4);
+    tableOffsets.append(0xac);
+    tableOffsets.append(0x154);
+    tableOffsets.append(0x1fc);
+
+    objTableAddress = 0xDAD8C0;
 }
 
 void WorldState::saveState(const QString &stateFile)
 {
+    QDomDocument state("MapHackWorldState");
+    QDomElement world = makeElement(state, "world");
+    world.setAttribute("name", "chernarus");
+    state.appendChild(world);
 
+    for(QVector<EntityData>::const_iterator it = entityArray.cbegin(); it != entityArray.cend(); ++it)
+    {
+        QDomElement entity = makeElement(state, "entity");
+        entity.appendChild(makeElement(state, "name", it->name));
+        entity.appendChild(makeElement(state, "type", QVariant(static_cast<int>(it->entityType)).toString()));
+        QDomElement coords = makeElement(state, "coords");
+        coords.appendChild(makeElement(state, "x", QVariant(it->coords.x()).toString()));
+        coords.appendChild(makeElement(state, "y", QVariant(it->coords.y()).toString()));
+        entity.appendChild(coords);
+
+        if(!it->additionalFields.isEmpty())
+        {
+            QDomElement options = makeElement(state, "options");
+            for(QMap<QString,QString>::const_iterator i = it->additionalFields.cbegin(); i!=it->additionalFields.cend(); ++i)
+            {
+                options.appendChild(makeElement(state, i.key(), i.value()));
+            }
+            entity.appendChild(options);
+        }
+
+        world.appendChild(entity);
+    }
+
+    QFile file(stateFile);
+    if(file.open(QIODevice::WriteOnly))
+    {
+        QTextStream(&file) << state.toString();
+        file.close();
+    }
+}
+
+QDomElement WorldState::makeElement(QDomDocument &domDoc, const QString &name, const QString &strData)
+{
+    QDomElement domElement = domDoc.createElement(name);
+    if(!strData.isEmpty())
+    {
+        QDomText domText = domDoc.createTextNode(strData);
+        domElement.appendChild(domText);
+    }
+    return domElement;
 }
 
 void WorldState::handleEntity(quint32 entityAddress, MemoryAPI &mem)

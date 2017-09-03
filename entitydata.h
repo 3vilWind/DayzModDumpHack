@@ -8,9 +8,9 @@
 class EntityData
 {
 public:
-    enum class type {first, airplane, car, motorcycle, ship, helicopter, parachute, tank,
+    enum class type {airplane, car, motorcycle, ship, helicopter, parachute, tank,
                      tent, stash, fence, ammoBox, campFire, crashSite, animals,
-                     players, zombies, stuff, hedgehog, invalid, last};
+                     players, zombies, stuff, hedgehog, invalid};
 
     type entityType;
 

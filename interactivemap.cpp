@@ -99,8 +99,10 @@ void InteractiveMap::updateTranslate(const QPointF& value)
 
 void InteractiveMap::mousePressEvent(QMouseEvent *pe)
 {
-    if(pe->button() & Qt::LeftButton)
+    if(pe->buttons() & Qt::LeftButton)
         startMove = pe->pos();
+    //else if(pe->buttons() & Qt::MidButton)
+
 }
 
 void InteractiveMap::mouseMoveEvent(QMouseEvent *pe)
@@ -144,12 +146,13 @@ void InteractiveMap::loadDump(QString dumpFile, QString idxFile)
     renderMutex.lock();
 
     delete worldState;
-    worldState = new WorldState(this);
-    worldState->loadDump(dumpFile, idxFile);
+    worldState = nullptr;
+    worldState = new WorldState(dumpFile, idxFile);
 
     renderMutex.unlock();
     setUpdatesEnabled(true);
     updateCache();
+    emit saveStateChanged(true);
 }
 
 void InteractiveMap::loadState(QString stateFile)
@@ -158,16 +161,30 @@ void InteractiveMap::loadState(QString stateFile)
     renderMutex.lock();
 
     delete worldState;
-
-    worldState = new WorldState(this);
-    worldState->loadState(stateFile);
+    worldState = nullptr;
+    worldState = new WorldState(stateFile);
 
     renderMutex.unlock();
     setUpdatesEnabled(true);
     updateCache();
+    emit saveStateChanged(true);
 }
 
 void InteractiveMap::saveState(QString stateFile)
 {
     worldState->saveState(stateFile);
+}
+
+void InteractiveMap::closeState()
+{
+    setUpdatesEnabled(false);
+    renderMutex.lock();
+
+    delete worldState;
+    worldState = nullptr;
+    cache = QPixmap();
+
+    renderMutex.unlock();
+
+    emit saveStateChanged(false);
 }

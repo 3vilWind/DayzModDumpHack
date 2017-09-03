@@ -9,10 +9,11 @@
 #include <QPainter>
 #include <QSettings>
 #include <QMap>
-#include <QtConcurrent>
 #include <QPicture>
 #include <QMutex>
 #include "worldstate.h"
+
+//QString findCloseObjects(QPointF pos);
 
 class EntityLayer
 {
@@ -42,8 +43,14 @@ public:
 public slots:
     void loadState(QString stateFile);
     void loadDump(QString dumpFile, QString idxFile);
+    void closeState();
     void saveState(QString stateFile);
     void updateCache();
+
+signals:
+    void showCloseObjects(QString str);
+    void saveStateChanged(bool state);
+    //void closeStateChanged(bool state);
 private:
     WorldState* worldState;
 
