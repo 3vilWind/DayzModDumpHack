@@ -30,18 +30,6 @@ private:
     QPointF         coords;
 };
 
-/*class EntityLayer
-{
-public:
-    EntityLayer() {}
-    EntityLayer(EntityRange *r, float s, QPicture* pix): range(r), scale(s), pixmap(pix) {}
-    void renderToPixmap();
-private:
-    EntityRange* range;
-    float       scale;
-    QPicture*    pixmap;
-};
-*/
 class InteractiveMap : public QWidget
 {
     Q_OBJECT
@@ -64,9 +52,9 @@ signals:
     void saveStateChanged(bool state);
     //void closeStateChanged(bool state);
 private:
-    const float minScale = 0.5;
-    const float maxScale = 8.0;
-    const float scaleStep= 2.0;
+    const float minScale = 1.0f;
+    const float maxScale = 8.0f;
+    const float scaleStep= 2.0f;
 
     void updateScale(const qreal value, const QPointF& dpos);
     void updateTranslate(const QPointF& value);

@@ -4,6 +4,7 @@
 #include <QtGlobal>
 #include <QMap>
 #include <QtConcurrent>
+#include <QTextStream>
 
 InteractiveMap::InteractiveMap(QWidget* pwgt) : QWidget(pwgt)
 {
@@ -206,7 +207,7 @@ void InteractiveMap::closeState()
 void addToAnswer(QString& result, const QString& interm)
 {
     if(!interm.isEmpty())
-        result += "\n" + interm;
+        result += interm;
 }
 
 void InteractiveMap::findCloseObjects(QPointF coords)
@@ -239,12 +240,16 @@ void InteractiveMap::sendCloseObjects()
 QString CloseObjects::findCloseObjects() const
 {
     QString result;
+    QTextStream stream(&result);
+    stream.setRealNumberNotation(QTextStream::FixedNotation);
+    stream.setRealNumberPrecision(2);
     for(QVector<EntityData>::const_iterator it = range->start; it != range->end; ++it)
     {
         float len = qSqrt(qPow((it->coords.x() - coords.x()),2) + qPow((it->coords.y() - coords.y()),2));
-        if(len <= 500)
-            result+= "\n" + it->name + "\n" + QVariant(it->coords.x()/100).toString() + " " + QVariant((15360 - it->coords.y())/100).toString();
-
+        if(len <= 350)
+        {
+            stream << "\n" << it->name << "\n" << QVariant(it->coords.x()/100).toFloat() << " " << QVariant((15360 - it->coords.y())/100).toFloat();
+        }
     }
     return result;
 }

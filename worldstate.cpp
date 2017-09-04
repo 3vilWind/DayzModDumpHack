@@ -95,7 +95,12 @@ WorldState::WorldState(const QString &stateFile)
                                     else if(entText.tagName() == "y")
                                         ent.coords.setY(entText.text().toFloat());
                                 }
-
+                            }else if(entElem.tagName() == "options")
+                            {
+                                for(QDomElement entText = entElem.firstChild().toElement(); !entText.isNull(); entText = entText.nextSibling().toElement())
+                                {
+                                    ent.additionalFields[entText.tagName()] = entText.text();
+                                }
                             }
                         }
                         QCoreApplication::processEvents();
