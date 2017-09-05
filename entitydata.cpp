@@ -12,12 +12,18 @@ EntityData::EntityData(QString n, QPointF c, type t)
     entityType = t;
 }
 
-QString EntityData::shortDescription()
+QString EntityData::shortDescription() const
 {
     return name;
 }
 
-QString EntityData::fullDescription()
+QString EntityData::fullDescription() const
 {
-    return name;
+    QString result = name;
+    for(QMap<QString,QString>::const_iterator it = additionalFields.cbegin(); it!=additionalFields.cend();++it)
+    {
+        result+="\n";
+        result+=it.value();
+    }
+    return result;
 }

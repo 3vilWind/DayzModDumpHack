@@ -98,7 +98,8 @@ SidePanel::SidePanel(QWidget *parent) : QWidget(parent)
 
     mapCheckBoxes(oth, othLayout);
 
-    closeObjects = new QLabel("Press mid button on map");
+    closeObjects = new QPlainTextEdit("Press mid button on map");
+    closeObjects->setReadOnly(true);
     othLayout->addWidget(closeObjects);
 
     /*QSlider* sl = new QSlider(Qt::Horizontal);

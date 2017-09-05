@@ -9,6 +9,12 @@ QT       += core gui xml widgets concurrent
 TARGET = DayZModDumpHack
 TEMPLATE = app
 
+VERSION = 0.5.0.0
+QMAKE_TARGET_COMPANY = EvilWind
+QMAKE_TARGET_PRODUCT = DayZ Mod Dump Hack
+QMAKE_TARGET_DESCRIPTION = Dump Hack
+QMAKE_TARGET_COPYRIGHT = EvilWind
+
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked as deprecated (the exact warnings
 # depend on your compiler). Please consult the documentation of the
@@ -40,4 +46,7 @@ HEADERS += \
     entitydata.h \
     settingsmanager.h
 
-FORMS +=
+RC_ICONS = icon.ico
+
+RESOURCES += \
+    resources.qrc

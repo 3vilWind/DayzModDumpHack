@@ -140,7 +140,7 @@ void WorldState::saveState(const QString &stateFile)
     for(QVector<EntityData>::const_iterator it = entityArray.cbegin(); it != entityArray.cend(); ++it)
     {
         QDomElement entity = makeElement(state, "entity");
-        entity.appendChild(makeElement(state, "name", it->name));
+        entity.appendChild(makeElement(state, "name", it->shortDescription()));
         entity.appendChild(makeElement(state, "type", QVariant(static_cast<int>(it->entityType)).toString()));
         QDomElement coords = makeElement(state, "coords");
         coords.appendChild(makeElement(state, "x", QVariant(it->coords.x()).toString()));
@@ -241,7 +241,7 @@ void WorldState::handleEntity(quint32 entityAddress, MemoryAPI &mem)
         ed.entityType = EntityData::type::animals;
     else if(objName.indexOf("Survivor2_DZ")!= -1 || objName.indexOf("Sniper1_DZ")!=-1 ||
             objName.indexOf("Camo1_DZ")!=-1 || objName.indexOf("Survivor3_DZ")!=-1 ||
-            objName.indexOf("Bandit1_DZ")!= -1)
+            objName.indexOf("Bandit1_DZ")!= -1 || objName.indexOf("Soldier1_DZ")!= -1)
         ed.entityType = EntityData::type::players;
     else
         ed.entityType = EntityData::type::stuff;

@@ -7,7 +7,7 @@
 #include <QSignalMapper>
 #include <QVBoxLayout>
 #include <QCheckBox>
-#include <QLabel>
+#include <QPlainTextEdit>
 
 class FilterCheckBox : public QCheckBox
 {
@@ -29,7 +29,7 @@ class SidePanel : public QWidget
     Q_OBJECT
 public:
     explicit SidePanel(QWidget *parent = nullptr);
-    QLabel* closeObjects;
+    QPlainTextEdit* closeObjects;
 private:
     void mapCheckBoxes(QVector<FilterCheckBox *> &v, QVBoxLayout* bl);
 

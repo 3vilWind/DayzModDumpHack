@@ -9,7 +9,7 @@
 InteractiveMap::InteractiveMap(QWidget* pwgt) : QWidget(pwgt)
 {
     painter = new QPainter();
-    image   = new QPixmap("D:/bigmap.jpg");
+    image   = new QPixmap(":/res/bigmap.jpg");
 
     scale = 1;
 
@@ -55,8 +55,8 @@ void InteractiveMap::paintEvent(QPaintEvent *pe)
             {
                 for(QVector<EntityData>::const_iterator i = it.value().start; i!= it.value().end; ++i)
                 {
-                    float x = (*i).coords.x();
-                    float y = (*i).coords.y();
+                    float x = i->getCoords().x();
+                    float y = i->getCoords().y();
                     x = (((x) / (15360.0f / 975.0f)));
                     y = (((15360.0f - y) / (15360.0f / 970.0f)) - 4);
 
@@ -69,7 +69,7 @@ void InteractiveMap::paintEvent(QPaintEvent *pe)
                     cachePaint.setPen(pen);
 
                     if(getFilterValue(QString("name")))
-                        cachePaint.drawText(x,y,(*i).name);
+                        cachePaint.drawText(x,y,i->shortDescription());
                     cachePaint.drawPoint(x,y);
                 }
             }
@@ -106,13 +106,17 @@ void InteractiveMap::mousePressEvent(QMouseEvent *pe)
         startMove = pe->pos();
     else if(pe->buttons() & Qt::MidButton)
     {
-        QPointF pos = pe->pos()/scale - translate;
-        if(pos.x()>=0.0f && pos.x()<=image->width() && pos.y()>=0.0f && pos.y()<=image->height())
+        if(worldState)
         {
-            pos.rx() = pos.x() * (15360.0f / 975.0f);
-            pos.ry() = -((15360.0f/970.0f)*(pos.y()+4.0f)-15360.0f);
-            findCloseObjects(pos);
+            QPointF pos = pe->pos()/scale - translate;
+            if(pos.x()>=0.0f && pos.x()<=image->width() && pos.y()>=0.0f && pos.y()<=image->height())
+            {
+                pos.rx() = pos.x() * (15360.0f / 975.0f);
+                pos.ry() = -((15360.0f/970.0f)*(pos.y()+4.0f)-15360.0f);
+                findCloseObjects(pos);
+            }
         }
+
     }
 }
 
@@ -245,10 +249,10 @@ QString CloseObjects::findCloseObjects() const
     stream.setRealNumberPrecision(2);
     for(QVector<EntityData>::const_iterator it = range->start; it != range->end; ++it)
     {
-        float len = qSqrt(qPow((it->coords.x() - coords.x()),2) + qPow((it->coords.y() - coords.y()),2));
+        float len = qSqrt(qPow((it->getCoords().x() - coords.x()),2) + qPow((it->getCoords().y() - coords.y()),2));
         if(len <= 350)
         {
-            stream << "\n" << it->name << "\n" << QVariant(it->coords.x()/100).toFloat() << " " << QVariant((15360 - it->coords.y())/100).toFloat();
+            stream << it->fullDescription() << "\n" << QVariant(it->getCoords().x()/100).toFloat() << " " << QVariant((15360 - it->getCoords().y())/100).toFloat() << "\n";
         }
     }
     return result;

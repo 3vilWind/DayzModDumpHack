@@ -47,7 +47,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(panel, SIGNAL(updateMap()), map, SLOT(updateCache()));
     connect(map, SIGNAL(saveStateChanged(bool)), saveAct, SLOT(setEnabled(bool)));
     connect(map, SIGNAL(saveStateChanged(bool)), closeAct, SLOT(setEnabled(bool)));
-    connect(map, SIGNAL(showCloseObjects(QString)), panel->closeObjects, SLOT(setText(QString)));
+    connect(map, SIGNAL(showCloseObjects(QString)), panel->closeObjects, SLOT(setPlainText(QString)));
     //connect(&map->closeObjWatcher, SIGNAL(finished()), panel, SLOT(setText));
 }
 

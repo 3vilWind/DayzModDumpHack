@@ -5,9 +5,12 @@
 #include <QMap>
 #include <QPointF>
 
+class WorldState;
+
 class EntityData
 {
 public:
+    friend class WorldState;
     enum class type {airplane, car, motorcycle, ship, helicopter, parachute, tank,
                      tent, stash, fence, ammoBox, campFire, crashSite, animals,
                      players, zombies, stuff, hedgehog, invalid};
@@ -17,9 +20,10 @@ public:
     EntityData();
     EntityData(QString n, QPointF c, type t = type::stuff);
 
-    QString shortDescription();
-    QString fullDescription();
-
+    QString shortDescription()const;
+    QString fullDescription()const;
+    QPointF getCoords() const {return coords;}
+private:
     QString name;
     QPointF coords;
     QMap<QString, QString> additionalFields;
