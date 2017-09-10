@@ -9,7 +9,7 @@ QT       += core gui xml widgets concurrent
 TARGET = DayZModDumpHack
 TEMPLATE = app
 
-VERSION = 0.5.0.0
+VERSION = 0.5.5.0
 QMAKE_TARGET_COMPANY = EvilWind
 QMAKE_TARGET_PRODUCT = DayZ Mod Dump Hack
 QMAKE_TARGET_DESCRIPTION = Dump Hack

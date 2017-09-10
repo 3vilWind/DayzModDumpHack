@@ -50,9 +50,9 @@ public:
     quint32 getPhysicalAddress() const { return basePhysicalAddress; }
     quint32 getSize()const { return size; }
 
-    quint32 setVirtualAddress(quint32 addr){ baseVirtualAddress = addr; }
-    quint32 setPhysicalAddress(quint32 addr){ basePhysicalAddress = addr; }
-    quint32 setSize(quint32 len){ size = len; }
+    void setVirtualAddress(quint32 addr){ baseVirtualAddress = addr; }
+    void setPhysicalAddress(quint32 addr){ basePhysicalAddress = addr; }
+    void setSize(quint32 len){ size = len; }
 private:
     quint32 baseVirtualAddress;
     quint32 basePhysicalAddress;
