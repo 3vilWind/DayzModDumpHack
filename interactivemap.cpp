@@ -21,7 +21,6 @@ InteractiveMap::InteractiveMap(QWidget* pwgt) : QWidget(pwgt)
     setAutoFillBackground(true);
 
     worldState = nullptr;
-    isCached = false;
     input = nullptr;
 }
 
@@ -43,7 +42,7 @@ void InteractiveMap::paintEvent(QPaintEvent *pe)
     painter->translate(translate);
     painter->drawPixmap(0,0, *image);
 
-    if(!isCached)
+    if(cache.isNull())
     {
         cache = QPixmap(image->size()*4);
         cache.setDevicePixelRatio(4);
@@ -58,13 +57,13 @@ void InteractiveMap::paintEvent(QPaintEvent *pe)
                     float x = i->getCoords().x();
                     float y = i->getCoords().y();
                     x = (((x) / (15360.0f / 975.0f)));
-                    y = (((15360.0f - y) / (15360.0f / 970.0f)) - 4);
+                    y = (((15360.0f - y) / (15360.0f / 970.0f)) - 4.0f);
 
                     QFont font("Arial");
                     QPen  pen;
-                    pen.setWidthF(4/scale);
+                    pen.setWidthF(4.0f/scale);
                     pen.setStyle(Qt::SolidLine);
-                    font.setPointSizeF(qMax(float(8*1/scale),2.0f));
+                    font.setPointSizeF(qMax(float(8.0f*1.0f/scale),2.0f));
                     cachePaint.setFont(font);
                     cachePaint.setPen(pen);
 
@@ -74,7 +73,6 @@ void InteractiveMap::paintEvent(QPaintEvent *pe)
                 }
             }
         }
-        isCached = true;
     }
     painter->drawPixmap(0,0,cache);
 //////////////////////////////////////////////////
@@ -85,10 +83,10 @@ void InteractiveMap::paintEvent(QPaintEvent *pe)
 void InteractiveMap::updateScale(qreal value, const QPointF& dpos)
 {
     qreal newScale = scale * value;
-    if(newScale >= minScale && newScale <=maxScale)
+    if(newScale >= minScale && newScale <= maxScale)
     {
-        scale=newScale;
-        translate+=dpos/scale;
+        scale = newScale;
+        translate += dpos/scale;
         updateCache();
     }
 }
@@ -109,7 +107,7 @@ void InteractiveMap::mousePressEvent(QMouseEvent *pe)
         if(worldState)
         {
             QPointF pos = pe->pos()/scale - translate;
-            if(pos.x()>=0.0f && pos.x()<=image->width() && pos.y()>=0.0f && pos.y()<=image->height())
+            if(pos.x() >= 0.0f && pos.x() <= image->width() && pos.y() >= 0.0f && pos.y() <= image->height())
             {
                 pos.rx() = pos.x() * (15360.0f / 975.0f);
                 pos.ry() = -((15360.0f/970.0f)*(pos.y()+4.0f)-15360.0f);
@@ -151,7 +149,7 @@ bool InteractiveMap::getFilterValue(QString t)
 
 void InteractiveMap::updateCache()
 {
-    isCached = false;
+    cache = QPixmap();
     update();
 }
 
@@ -194,14 +192,12 @@ void InteractiveMap::closeState()
 {
     setUpdatesEnabled(false);
     renderMutex.lock();
-    closeObjWatcher.cancel();
     closeObjWatcher.waitForFinished();
 
     delete worldState;
     worldState = nullptr;
 
     cache = QPixmap();
-    isCached = false;
 
     renderMutex.unlock();
 

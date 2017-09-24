@@ -27,11 +27,11 @@ WorldState::WorldState(const QString& dumpFile, const QString& idxFile)
         quint32 entityTableBasePtr = mem.readPtr(objTableAddress) + (*mO);
         for(auto tO = tableOffsets.begin(); tO != tableOffsets.end(); ++tO)
         {
-            qint32 size = mem.readInt(entityTableBasePtr + 0x8 +(*tO));
+            qint32 size = mem.readInt(entityTableBasePtr + 0x4 +(*tO));
 
             for(qint32 i = 0; i!=size; ++i)
             {
-                quint32 fPtr = mem.readPtr(entityTableBasePtr + (*tO) + 4);
+                quint32 fPtr = mem.readPtr(entityTableBasePtr + (*tO));
                 quint32 entityAddress = mem.readPtr(fPtr + 4 * i);
 
                 handleEntity(entityAddress, mem);
@@ -118,14 +118,14 @@ WorldState::WorldState(const QString &stateFile)
 
 void WorldState::initOffsets()
 {
-    masterOffsets.append(0x87c + 0x4);
-    masterOffsets.append(0xb20 + 0x4);
-    masterOffsets.append(0xdc4 + 0x4);
+    masterOffsets.append(0x880);
+    masterOffsets.append(0xb24);
+    masterOffsets.append(0xdc8);
 
-    tableOffsets.append(0x4);
-    tableOffsets.append(0xac);
-    tableOffsets.append(0x154);
-    tableOffsets.append(0x1fc);
+    tableOffsets.append(0x8);
+    tableOffsets.append(0xb0);
+    tableOffsets.append(0x158);
+    tableOffsets.append(0x200);
 
     objTableAddress = 0xDAD8C0;
 }
@@ -191,16 +191,16 @@ void WorldState::handleEntity(quint32 entityAddress, MemoryAPI &mem)
         quint32 pCfgVehicle = mem.readPtr(obj1 + 0x3C);
         quint32 obj3 = mem.readPtr(pCfgVehicle + 0x30);
         quint32 pObjType = mem.readPtr(pCfgVehicle + 0x6C);
-        //quint32 pEntityInventory = mem.readPtr(obj1 + 0x21C);
 
         objType = mem.readArmaString(pObjType);
         objName = mem.readStringAscii(obj3 + 0x8, 25);
 
-        quint32 coords = mem.readPtr(obj1 + 0x18);
-        coordX = mem.readFloat(coords + 0x28);
-        coordY = mem.readFloat(coords + 0x30);
+        quint32 pEntityVisualState = mem.readPtr(obj1 + 0x18);
+        coordX = mem.readFloat(pEntityVisualState + 0x28);
+        coordY = mem.readFloat(pEntityVisualState + 0x30);
     }catch(int a)
     {
+        qDebug() << "Ошибка доступа к виртуальной памяти.";
         return;
     }
 

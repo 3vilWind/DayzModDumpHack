@@ -2,11 +2,6 @@
 #include <limits>
 #include <QDebug>
 
-MemoryAPI::MemoryAPI(QObject *parent) : QObject(parent)
-{
-
-}
-
 MemoryAPI::MemoryAPI(QString pathDump, QString pathIDX)
 {    
     loadDump(pathDump);
@@ -17,7 +12,6 @@ quint32 MemoryAPI::convertVirtToPhys(const quint32 virt) const
 {
     for(auto it = memoryRelations.begin(); it != memoryRelations.end(); ++it)
     {
-        //qDebug() << hex <<  virt << (*it).getVirtualAddress() << (*it).getSize();
         if((*it).inRange(virt))
         {
             const quint32& phBase = (*it).getPhysicalAddress(), vrBase = (*it).getVirtualAddress();
@@ -62,20 +56,12 @@ void MemoryAPI::loadDump(QString path)
 
 QByteArray MemoryAPI::readVirtMem(const quint32 baseAddr, const quint32 size)
 {
-    //qDebug() << hex << baseAddr;
     QByteArray result;
-    //try{
-        quint32 addr = convertVirtToPhys(baseAddr);
-        //qDebug() << hex << addr;
-        dumpFile.seek(addr);
-        result = dumpFile.read(size);
 
-        //qDebug() << hex << result.toUInt(nullptr,16);
-    /*}catch(int i)
-    {
-        //1+1;
-        qDebug() << "Ошибка с конвертацией адреса";
-    }*/
+    quint32 addr = convertVirtToPhys(baseAddr);
+    dumpFile.seek(addr);
+    result = dumpFile.read(size);
+
     return result;
 }
 

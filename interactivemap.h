@@ -17,8 +17,6 @@
 #include <QImage>
 #include "worldstate.h"
 
-//QString findCloseObjects(QPointF pos);
-
 class CloseObjects
 {
 public:
@@ -33,24 +31,14 @@ private:
 class InteractiveMap : public QWidget
 {
     Q_OBJECT
-protected:
-    virtual void paintEvent(QPaintEvent* pe);
 
 public:
     InteractiveMap(QWidget* pwgt = nullptr);
     virtual ~InteractiveMap();
-public slots:
-    void loadState(QString stateFile);
-    void loadDump(QString dumpFile, QString idxFile);
-    void closeState();
-    void saveState(QString stateFile);
-    void updateCache();
-    void sendCloseObjects();
 
-signals:
-    void showCloseObjects(QString str);
-    void saveStateChanged(bool state);
-    //void closeStateChanged(bool state);
+protected:
+    virtual void paintEvent(QPaintEvent* pe);
+
 private:
     const float minScale = 1.0f;
     const float maxScale = 8.0f;
@@ -77,12 +65,23 @@ private:
     QPointF translate;
     QPoint startMove;
 
-    bool isCached;
     QPixmap cache;
 
     QMutex renderMutex;
     QFutureWatcher<QString> closeObjWatcher;
     QFuture<QString> closeObjFuture;
+
+public slots:
+    void loadState(QString stateFile);
+    void loadDump(QString dumpFile, QString idxFile);
+    void closeState();
+    void saveState(QString stateFile);
+    void updateCache();
+    void sendCloseObjects();
+
+signals:
+    void showCloseObjects(QString str);
+    void saveStateChanged(bool state);
 };
 
 #endif // INTERACTIVEMAP_H

@@ -26,7 +26,6 @@ public:
     void saveState(const QString& stateFile);
 
     QMap <EntityData::type, EntityRange> entityRanges;
-
     QString worldName;
 private:
     QVector <EntityData> entityArray;
@@ -38,7 +37,6 @@ private:
     void initOffsets();
 
     QDomElement makeElement(QDomDocument& domDoc, const QString& name, const QString& strData = QString());
-    //void handleInventory(quint32 inventoryAddress, MemoryAPI& mem);
 };
 
 #endif // WORLDSTATE_H

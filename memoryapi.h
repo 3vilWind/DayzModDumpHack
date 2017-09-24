@@ -12,11 +12,10 @@
 
 class MemoryRange;
 
-class MemoryAPI : public QObject
+class MemoryAPI
 {
-    Q_OBJECT
 public:
-    explicit MemoryAPI(QObject *parent = nullptr);
+    MemoryAPI(){}
     MemoryAPI(QString pathDump, QString pathIDX);
 
     quint32 readPtr      (const quint32 offset);
@@ -33,10 +32,6 @@ private:
     quint32 convertVirtToPhys(const quint32 virt) const;
     QByteArray readVirtMem(const quint32 baseAddr, const quint32 size);
     QFile dumpFile;
-
-signals:
-
-public slots:
 };
 
 class MemoryRange
