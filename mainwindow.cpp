@@ -20,35 +20,36 @@ MainWindow::MainWindow(QWidget *parent) :
     QMenu *pFile = new QMenu("File");
     QMenu *pHelp = new QMenu("Help");
 
-    pFile->addAction("Load dump", this, &MainWindow::loadDump);
-    pFile->addAction("Load State", this, &MainWindow::loadState);
-    QAction* saveAct = pFile->addAction("Save state", this, &MainWindow::saveWorldState);
+    pFile->addAction(QStringLiteral("Load dump"),                       this, &MainWindow::loadDump);
+    pFile->addAction(QStringLiteral("Load state"),                      this, &MainWindow::loadState);
+
+    QAction* saveAct = pFile->addAction(QStringLiteral("Save state"),   this, &MainWindow::saveWorldState);
+    QAction* closeAct = pFile->addAction(QStringLiteral("Close state"), this, &MainWindow::closeWorldState);
+
     saveAct->setEnabled(false);
-    QAction* closeAct = pFile->addAction("Close state", this, &MainWindow::closeWorldState);
     closeAct->setEnabled(false);
-    pFile->addAction("Exit", QCoreApplication::instance(), SLOT(quit()));
+
+    pFile->addAction(QStringLiteral("Exit"), QCoreApplication::instance(),    &QCoreApplication::quit);
 
     menuBar()->addMenu(pFile);
     menuBar()->addMenu(pHelp);
 
     QSplitter* spl = new QSplitter(Qt::Horizontal);
-
     SidePanel* panel = new SidePanel;
 
     panel->setMinimumWidth(250);
     panel->setMaximumWidth(panel->minimumWidth());
-    panel->resize(panel->minimumWidth(),panel->height());
+    panel->resize(panel->minimumWidth(), panel->height());
 
     spl->addWidget(map);
     spl->addWidget(panel);
 
     setCentralWidget(spl);
 
-    connect(panel, SIGNAL(updateMap()), map, SLOT(updateCache()));
-    connect(map, SIGNAL(saveStateChanged(bool)), saveAct, SLOT(setEnabled(bool)));
-    connect(map, SIGNAL(saveStateChanged(bool)), closeAct, SLOT(setEnabled(bool)));
-    connect(map, SIGNAL(showCloseObjects(QString)), panel->closeObjects, SLOT(setPlainText(QString)));
-    //connect(&map->closeObjWatcher, SIGNAL(finished()), panel, SLOT(setText));
+    connect(panel,  &SidePanel::updateMap,              map,                    &InteractiveMap::updateCache);
+    connect(map,    &InteractiveMap::saveStateChanged,  saveAct,                &QAction::setEnabled);
+    connect(map,    &InteractiveMap::saveStateChanged,  closeAct,               &QAction::setEnabled);
+    connect(map,    &InteractiveMap::showCloseObjects,  panel->closeObjects,    &QPlainTextEdit::setPlainText);
 }
 
 MainWindow::~MainWindow()
@@ -57,22 +58,25 @@ MainWindow::~MainWindow()
 
 void MainWindow::loadDump()
 {
-    QString dump = QFileDialog::getOpenFileName(nullptr, "Load .dmp file"),
-            idx  = QFileDialog::getOpenFileName(nullptr, "Load .idx file");
+    QString dump = QFileDialog::getOpenFileName(nullptr, QStringLiteral("Load .dmp file")),
+            idx  = QFileDialog::getOpenFileName(nullptr, QStringLiteral("Load .idx file"));
+
     if(!dump.isEmpty() && !idx.isEmpty())
-    map->loadDump(dump, idx);
+        map->loadDump(dump, idx);
 }
 
 void MainWindow::loadState()
 {
-    QString st = QFileDialog::getOpenFileName(nullptr, "Load state file");
+    QString st = QFileDialog::getOpenFileName(nullptr, QStringLiteral("Load state file"));
+
     if(!st.isEmpty())
         map->loadState(st);
 }
 
 void MainWindow::saveWorldState()
 {
-    QString st = QFileDialog::getSaveFileName(nullptr, "Save state");
+    QString st = QFileDialog::getSaveFileName(nullptr, QStringLiteral("Save state"));
+
     if(!st.isEmpty())
         map->saveState(st);
 }

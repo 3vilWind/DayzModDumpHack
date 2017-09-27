@@ -12,7 +12,7 @@ WorldState::WorldState(const QString& dumpFile, const QString& idxFile)
 
     QProgressDialog progress;
     progress.setCancelButton(nullptr);
-    progress.setLabelText("Loading dump...");
+    progress.setLabelText(QStringLiteral("Loading dump..."));
     progress.setModal(true);
     progress.setMinimum(0);
 
@@ -42,7 +42,7 @@ WorldState::WorldState(const QString& dumpFile, const QString& idxFile)
         progress.setValue(progress.value()+1);
     }
     initRanges();
-    worldName = "chernarus";
+    worldName = QStringLiteral("chernarus");
     progress.setValue(progress.value()+1);
 }
 
@@ -52,7 +52,7 @@ WorldState::WorldState(const QString &stateFile)
 
     QProgressDialog progress;
     progress.setCancelButton(nullptr);
-    progress.setLabelText("Loading dump...");
+    progress.setLabelText(QStringLiteral("Loading state..."));
     progress.setModal(true);
     progress.setMinimum(0);
 
@@ -65,37 +65,36 @@ WorldState::WorldState(const QString &stateFile)
     if(file.open(QIODevice::ReadOnly)) {
         if(domDoc.setContent(&file)) {
             QDomElement rootElement = domDoc.documentElement();
-            worldName = rootElement.attribute("name", "chernarus");
+            worldName = rootElement.attribute(QStringLiteral("name"), QStringLiteral("chernarus"));
             progress.setMaximum(rootElement.childNodes().count());
             //Iterate entities
             for(QDomNode domNode = rootElement.firstChild(); !domNode.isNull(); domNode = domNode.nextSibling())
             {
                 if(domNode.isElement()) {
                     EntityData ent;
-                    //ent.name
                     QDomElement entity = domNode.toElement();
                     for(QDomNode entNode = entity.firstChild(); !entNode.isNull(); entNode = entNode.nextSibling())
                     {
                         if(entNode.isElement())
                         {
                             QDomElement entElem = entNode.toElement();
-                            if(entElem.tagName() == "name")
+                            if(entElem.tagName() == QStringLiteral("name"))
                             {
                                 ent.name = entElem.text();
-                            }else if(entElem.tagName() == "type")
+                            }else if(entElem.tagName() == QStringLiteral("type"))
                             {
                                 ent.entityType = static_cast<EntityData::type>(entElem.text().toInt());
                             }
-                            else if(entElem.tagName() == "coords")
+                            else if(entElem.tagName() == QStringLiteral("coords"))
                             {
                                 for(QDomElement entText = entElem.firstChild().toElement(); !entText.isNull(); entText = entText.nextSibling().toElement())
                                 {
-                                    if(entText.tagName() == "x")
+                                    if(entText.tagName() == QStringLiteral("x"))
                                         ent.coords.setX(entText.text().toFloat());
-                                    else if(entText.tagName() == "y")
+                                    else if(entText.tagName() == QStringLiteral("y"))
                                         ent.coords.setY(entText.text().toFloat());
                                 }
-                            }else if(entElem.tagName() == "options")
+                            }else if(entElem.tagName() == QStringLiteral("options"))
                             {
                                 for(QDomElement entText = entElem.firstChild().toElement(); !entText.isNull(); entText = entText.nextSibling().toElement())
                                 {
@@ -132,24 +131,24 @@ void WorldState::initOffsets()
 
 void WorldState::saveState(const QString &stateFile)
 {
-    QDomDocument state("MapHackWorldState");
-    QDomElement world = makeElement(state, "world");
-    world.setAttribute("name", "chernarus");
+    QDomDocument state(QStringLiteral("MapHackWorldState"));
+    QDomElement world = makeElement(state, QStringLiteral("world"));
+    world.setAttribute(QStringLiteral("name"), QStringLiteral("chernarus"));
     state.appendChild(world);
 
     for(QVector<EntityData>::const_iterator it = entityArray.cbegin(); it != entityArray.cend(); ++it)
     {
         QDomElement entity = makeElement(state, "entity");
-        entity.appendChild(makeElement(state, "name", it->shortDescription()));
-        entity.appendChild(makeElement(state, "type", QVariant(static_cast<int>(it->entityType)).toString()));
+        entity.appendChild(makeElement(state,   "name", it->shortDescription()));
+        entity.appendChild(makeElement(state,   "type", QVariant(static_cast<int>(it->entityType)).toString()));
         QDomElement coords = makeElement(state, "coords");
-        coords.appendChild(makeElement(state, "x", QVariant(it->coords.x()).toString()));
-        coords.appendChild(makeElement(state, "y", QVariant(it->coords.y()).toString()));
+        coords.appendChild(makeElement(state,   "x", QVariant(it->coords.x()).toString()));
+        coords.appendChild(makeElement(state,   "y", QVariant(it->coords.y()).toString()));
         entity.appendChild(coords);
 
         if(!it->additionalFields.isEmpty())
         {
-            QDomElement options = makeElement(state, "options");
+            QDomElement options = makeElement(state, QStringLiteral("options"));
             for(QMap<QString,QString>::const_iterator i = it->additionalFields.cbegin(); i!=it->additionalFields.cend(); ++i)
             {
                 options.appendChild(makeElement(state, i.key(), i.value()));
@@ -200,48 +199,48 @@ void WorldState::handleEntity(quint32 entityAddress, MemoryAPI &mem)
         coordY = mem.readFloat(pEntityVisualState + 0x30);
     }catch(int a)
     {
-        qDebug() << "Ошибка доступа к виртуальной памяти.";
+        qDebug() << "Error virtual address not found.";
         return;
     }
 
 
     EntityData ed(objName, QPointF(coordX, coordY));
 
-    if(objType == "car")
+    if(objType == QStringLiteral("car"))
         ed.entityType = EntityData::type::car;
-    else if(objType == "motorcycle")
+    else if(objType == QStringLiteral("motorcycle"))
         ed.entityType = EntityData::type::motorcycle;
-    else if(objType == "airplane")
+    else if(objType == QStringLiteral("airplane"))
         ed.entityType = EntityData::type::airplane;
-    else if(objType == "helicopter")
+    else if(objType == QStringLiteral("helicopter"))
         ed.entityType = EntityData::type::helicopter;
-    else if(objType == "ship")
+    else if(objType == QStringLiteral("ship"))
         ed.entityType = EntityData::type::ship;
-    else if(objType == "tank")
+    else if(objType == QStringLiteral("tank"))
         ed.entityType = EntityData::type::tank;
-    else if(objType == "parachute")
+    else if(objType == QStringLiteral("parachute"))
         ed.entityType = EntityData::type::parachute;
-    else if(objName.indexOf("TentStorage")!=-1)
+    else if(objName.indexOf(QStringLiteral("TentStorage"))!=-1)
         ed.entityType = EntityData::type::tent;
-    else if(objName.indexOf("Stash")!=-1)
+    else if(objName.indexOf(QStringLiteral("Stash"))!=-1)
         ed.entityType = EntityData::type::stash;
-    else if(objName.indexOf("WoodenGate")!=-1 || objName.indexOf("WoodenFence")!=-1)
+    else if(objName.indexOf(QStringLiteral("WoodenGate"))!=-1 || objName.indexOf(QStringLiteral("WoodenFence"))!=-1)
         ed.entityType = EntityData::type::fence;
-    else if(objName.indexOf("DZ_MedBox")!=-1 || objName.indexOf("DZ_AmmoBox")!=-1)
+    else if(objName.indexOf(QStringLiteral("DZ_MedBox"))!=-1 || objName.indexOf(QStringLiteral("DZ_AmmoBox"))!=-1)
         ed.entityType = EntityData::type::ammoBox;
-    else if(objName.indexOf("Hedgehog_DZ")!=-1)
+    else if(objName.indexOf(QStringLiteral("Hedgehog_DZ"))!=-1)
         ed.entityType = EntityData::type::hedgehog;
-    else if(objName.indexOf("Land_Camp_Fire_DZ")!= -1)
+    else if(objName.indexOf(QStringLiteral("Land_Camp_Fire_DZ"))!= -1)
         ed.entityType = EntityData::type::campFire;
-    else if(objName.indexOf("CrashSite")!= -1)
+    else if(objName.indexOf(QStringLiteral("CrashSite"))!= -1)
         ed.entityType = EntityData::type::crashSite;
-    else if(objName.indexOf("WildBoar")== 0 || objName.indexOf("Rabbit")== 0 ||
-            objName.indexOf("Cow")== 0 || objName.indexOf("Sheep")== 0 ||
-            objName.indexOf("Goat")== 0 || objName.indexOf("Hen")== 0)
+    else if(objName.indexOf(QStringLiteral("WildBoar"))== 0 || objName.indexOf(QStringLiteral("Rabbit"))== 0 ||
+            objName.indexOf(QStringLiteral("Cow"))== 0 || objName.indexOf(QStringLiteral("Sheep"))== 0 ||
+            objName.indexOf(QStringLiteral("Goat"))== 0 || objName.indexOf(QStringLiteral("Hen"))== 0)
         ed.entityType = EntityData::type::animals;
-    else if(objName.indexOf("Survivor2_DZ")!= -1 || objName.indexOf("Sniper1_DZ")!=-1 ||
-            objName.indexOf("Camo1_DZ")!=-1 || objName.indexOf("Survivor3_DZ")!=-1 ||
-            objName.indexOf("Bandit1_DZ")!= -1 || objName.indexOf("Soldier1_DZ")!= -1)
+    else if(objName.indexOf(QStringLiteral("Survivor2_DZ"))!= -1 || objName.indexOf(QStringLiteral("Sniper1_DZ"))!=-1 ||
+            objName.indexOf(QStringLiteral("Camo1_DZ"))!=-1 || objName.indexOf(QStringLiteral("Survivor3_DZ"))!=-1 ||
+            objName.indexOf(QStringLiteral("Bandit1_DZ"))!= -1 || objName.indexOf(QStringLiteral("Soldier1_DZ"))!= -1)
         ed.entityType = EntityData::type::players;
     else
         ed.entityType = EntityData::type::stuff;
@@ -270,16 +269,3 @@ void WorldState::initRanges()
     if(!entityRanges.contains(currentType))
         entityRanges[currentType] = currentRange;
 }
-
-/*void WorldState::handleInventory(quint32 inventoryAddress, MemoryAPI &mem)
-{
-    qint32 weaponTableSize = mem.readInt(inventoryAddress + 0x10);
-    qint32 itemTableSize = mem.readInt(inventoryAddress + 0x1C);
-    quint32 weaponBasePtr = mem.readPtr(inventoryAddress + 0xC);
-    quint32 itemBasePtr = mem.readPtr(inventoryAddress + 0x18);
-    for(qint32 i = 0; i<weaponTableSize; ++i)
-    {
-        quint32 weaponPtr = weaponBasePtr + (i*4);
-
-    }
-}*/

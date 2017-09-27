@@ -28,7 +28,6 @@ quint32 MemoryAPI::convertVirtToPhys(const quint32 virt) const
 void MemoryAPI::loadIDX(QString path)
 {
     QFile file(path);
-    //qDebug() <<
     if(file.open(QIODevice::ReadOnly))
     {
         QTextStream stream(&file);

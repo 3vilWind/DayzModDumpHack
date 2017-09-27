@@ -3,8 +3,8 @@
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication::setOrganizationName("Luós.tm");
-    QCoreApplication::setApplicationName("DumpHack");
+    QCoreApplication::setOrganizationName(QStringLiteral("Luós.tm"));
+    QCoreApplication::setApplicationName(QStringLiteral("DumpHack"));
 
     QApplication a(argc, argv);
     MainWindow w;
